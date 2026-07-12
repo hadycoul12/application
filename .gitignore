@@ -1,0 +1,23 @@
+# Secrets (NE JAMAIS COMMIT)
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Logs générés à l'exécution
+data/audit_log.csv
+data/predictions_history.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
