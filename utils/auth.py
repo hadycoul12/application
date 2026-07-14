@@ -1,58 +1,138 @@
-"""
-Gestion de l'authentification et du journal d'audit RGPD.
-"""
+"""Consentement RGPD, authentification et journal d'audit."""
 
-import streamlit as st
-import pandas as pd
 from datetime import datetime
-import os
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+from utils.ui import inject_css
+
+AUDIT_LOG = Path(__file__).parent.parent / "data" / "audit_log.csv"
+
 
 # ---------------------------------------------------------------------------
-# Chemins
+# Secrets
 # ---------------------------------------------------------------------------
-AUDIT_LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "audit_log.csv")
+def _get_credentials() -> tuple[str, str] | None:
+    """
+    Récupère les identifiants depuis st.secrets.
+    Retourne None si les secrets sont absents ou mal formés.
+    """
+    try:
+        creds = st.secrets["credentials"]
+        return str(creds["username"]).strip(), str(creds["password"]).strip()
+    except Exception:
+        return None
 
 
-# ---------------------------------------------------------------------------
-# Bannière de consentement RGPD (bloquante)
-# ---------------------------------------------------------------------------
-def check_rgpd_consent():
-    """Affiche la bannière RGPD si le consentement n'a pas été donné."""
-    if st.session_state.get("rgpd_consent"):
-        return True
-
-    st.markdown("---")
+def _secrets_missing_screen():
+    """Écran d'erreur explicite quand secrets.toml est introuvable."""
+    st.error("⚠️ Configuration des identifiants introuvable")
     st.markdown(
         """
-        ### 🔒 Protection des données personnelles
+        Streamlit ne trouve pas la section `[credentials]` dans les secrets.
 
-        Cette application utilise un **modèle de scoring prédictif** entraîné
-        sur des données de réservation **anonymisées**. Aucune donnée personnelle
-        identifiante (nom, email, téléphone, adresse) n'est collectée,
-        stockée ou traitée par cette application.
+        **En local** — vérifie que le fichier `.streamlit/secrets.toml` existe
+        (et non pas seulement `secrets.example.toml`), et que tu lances
+        `streamlit run app.py` **depuis la racine du projet** :
 
-        **Finalité du traitement :** prévention des annulations de réservation
-        par identification des dossiers à risque, dans le cadre de l'intérêt
-        légitime de l'entreprise (article 6.1.f du RGPD).
+        ```
+        mon-projet/
+        ├── .streamlit/
+        │   └── secrets.toml     ← ce fichier exact
+        └── app.py               ← lancer depuis ici
+        ```
 
-        **Données traitées :** variables structurelles de réservation uniquement
-        (canal, condition d'annulation, anticipation, durée de séjour, etc.).
+        Contenu attendu de `secrets.toml` :
 
-        **Durée de conservation :** session uniquement — les prédictions ne sont
-        pas conservées au-delà de la session en cours.
+        ```toml
+        [credentials]
+        username = "maeva"
+        password = "maeva2026"
+        ```
 
-        En cliquant sur « J'accepte », vous reconnaissez avoir pris connaissance
-        de ces informations.
+        **Sur Streamlit Cloud** — colle ce même contenu dans
+        *Settings → Secrets*, puis relance l'application.
         """
     )
+    st.stop()
 
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
-        if st.button("✅ J'accepte", use_container_width=True, type="primary"):
-            st.session_state["rgpd_consent"] = True
-            st.session_state["rgpd_consent_at"] = datetime.now().isoformat()
-            log_action("anonyme", "Consentement RGPD accepté")
-            st.rerun()
+
+# ---------------------------------------------------------------------------
+# Consentement RGPD
+# ---------------------------------------------------------------------------
+def require_consent():
+    """Bannière de consentement bloquante."""
+    if st.session_state.get("consent"):
+        return
+
+    inject_css()
+
+    st.markdown(
+        """
+        <div class="gate">
+            <div class="gate-hero">
+                <div class="shield">🛡️</div>
+                <h2>Protection de vos données personnelles</h2>
+                <p>
+                    Conformément au Règlement Général sur la Protection des Données
+                    (RGPD — UE 2016/679), nous vous informons du traitement mis en œuvre
+                    dans cette application.
+                </p>
+            </div>
+            <div class="gate-body">
+                <div class="gate-row">
+                    <div class="k">🎯 Finalité</div>
+                    <div class="v">Identifier les réservations présentant un risque élevé
+                        d'annulation, en vue d'une action de rétention ciblée.</div>
+                </div>
+                <div class="gate-row">
+                    <div class="k">⚖️ Base légale</div>
+                    <div class="v">Intérêt légitime — article 6.1.f du RGPD.</div>
+                </div>
+                <div class="gate-row">
+                    <div class="k">🗂️ Données traitées</div>
+                    <div class="v">Variables structurelles de réservation uniquement :
+                        canal, condition tarifaire, anticipation, durée, région, support.
+                        <b>Aucune donnée personnelle identifiante</b> — les variables
+                        nom, email, téléphone, adresse et date de naissance sont exclues.</div>
+                </div>
+                <div class="gate-row">
+                    <div class="k">🔒 Sécurité</div>
+                    <div class="v">Transmission chiffrée HTTPS, authentification obligatoire,
+                        journalisation horodatée des accès.</div>
+                </div>
+                <div class="gate-row">
+                    <div class="k">⏱️ Conservation</div>
+                    <div class="v">Session uniquement — aucune persistance au-delà
+                        de la déconnexion.</div>
+                </div>
+                <div class="gate-row">
+                    <div class="k">✋ Vos droits</div>
+                    <div class="v">Accès, rectification, effacement, portabilité, opposition.
+                        Contact DPO : hady.coulibaly@edu.nexa.fr — réponse sous 30 jours.</div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        lu = st.checkbox(
+            "J'ai lu et j'accepte le traitement de ces données. Je comprends mes droits RGPD."
+        )
+        if st.button("Accéder à l'application →", type="primary", use_container_width=True):
+            if not lu:
+                st.warning("Vous devez cocher la case pour accéder à l'application.")
+            else:
+                st.session_state["consent"] = True
+                st.session_state["consent_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                log("anonyme", "Consentement RGPD accepté")
+                st.rerun()
 
     st.stop()
 
@@ -60,65 +140,86 @@ def check_rgpd_consent():
 # ---------------------------------------------------------------------------
 # Authentification
 # ---------------------------------------------------------------------------
-def check_authentication():
-    """Vérifie si l'utilisateur est authentifié, sinon affiche le login."""
-    if st.session_state.get("authenticated"):
-        return True
+def require_login():
+    """Écran de connexion bloquant."""
+    if st.session_state.get("auth"):
+        return
 
-    st.markdown("## 🔐 Connexion")
-    st.markdown("Accès réservé aux gestionnaires de réservation Maeva.")
+    inject_css()
 
-    with st.form("login_form"):
-        username = st.text_input("Identifiant")
-        password = st.text_input("Mot de passe", type="password")
-        submitted = st.form_submit_button("Se connecter", type="primary")
+    creds = _get_credentials()
+    if creds is None:
+        _secrets_missing_screen()
 
-    if submitted:
-        valid_user = st.secrets["credentials"]["username"]
-        valid_pass = st.secrets["credentials"]["password"]
+    valid_user, valid_pass = creds
 
-        if username == valid_user and password == valid_pass:
-            st.session_state["authenticated"] = True
-            st.session_state["username"] = username
-            st.session_state["login_at"] = datetime.now().isoformat()
-            log_action(username, "Connexion réussie")
+    st.markdown('<div class="login-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="login-logo">🎯</div>
+        <div class="login-title">Scoring Annulation</div>
+        <div class="login-sub">Accès réservé aux gestionnaires de réservation</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.form("login", border=True):
+        user = st.text_input("Identifiant", placeholder="maeva")
+        pwd = st.text_input("Mot de passe", type="password", placeholder="••••••••")
+        ok = st.form_submit_button("Se connecter", type="primary", use_container_width=True)
+
+    if ok:
+        # .strip() côté saisie : évite les échecs dus à un espace collé
+        if user.strip() == valid_user and pwd.strip() == valid_pass:
+            st.session_state["auth"] = True
+            st.session_state["user"] = user.strip()
+            st.session_state["login_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log(user.strip(), "Connexion réussie")
             st.rerun()
         else:
-            log_action(username or "inconnu", "Tentative de connexion échouée")
+            log(user.strip() or "inconnu", "Échec de connexion")
             st.error("Identifiant ou mot de passe incorrect.")
 
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 
 # ---------------------------------------------------------------------------
 # Journal d'audit
 # ---------------------------------------------------------------------------
-def log_action(user: str, action: str):
-    """Enregistre une action horodatée dans le journal d'audit."""
-    entry = {
-        "horodatage": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "utilisateur": user,
-        "action": action,
-    }
-    df_entry = pd.DataFrame([entry])
-
+def log(user: str, action: str):
+    """Enregistre une action horodatée."""
+    row = pd.DataFrame(
+        [{
+            "horodatage": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "utilisateur": user,
+            "action": action,
+        }]
+    )
     try:
-        if os.path.exists(AUDIT_LOG_PATH):
-            df_entry.to_csv(AUDIT_LOG_PATH, mode="a", header=False, index=False)
-        else:
-            os.makedirs(os.path.dirname(AUDIT_LOG_PATH), exist_ok=True)
-            df_entry.to_csv(AUDIT_LOG_PATH, mode="w", header=True, index=False)
+        AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
+        header = not AUDIT_LOG.exists()
+        row.to_csv(AUDIT_LOG, mode="a", header=header, index=False, encoding="utf-8")
     except Exception:
-        pass  # En cas d'erreur d'écriture (permissions), on ne bloque pas l'app
+        pass  # ne jamais bloquer l'app sur une erreur d'écriture
 
 
-def get_audit_log() -> pd.DataFrame:
+def read_audit() -> pd.DataFrame:
     """Charge le journal d'audit."""
-    if os.path.exists(AUDIT_LOG_PATH):
-        return pd.read_csv(AUDIT_LOG_PATH)
+    if AUDIT_LOG.exists():
+        try:
+            return pd.read_csv(AUDIT_LOG, encoding="utf-8")
+        except Exception:
+            pass
     return pd.DataFrame(columns=["horodatage", "utilisateur", "action"])
 
 
-def get_current_user() -> str:
-    """Retourne le nom de l'utilisateur connecté."""
-    return st.session_state.get("username", "inconnu")
+def current_user() -> str:
+    return st.session_state.get("user", "inconnu")
+
+
+def guard():
+    """Garde unique à appeler en haut de chaque vue."""
+    inject_css()
+    require_consent()
+    require_login()

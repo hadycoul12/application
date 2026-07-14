@@ -1,110 +1,50 @@
 """
-Application Streamlit — Scoring prédictif du risque d'annulation
-Maeva / Pierre & Vacances — Mémoire Master 2 Data & IA
+Scoring prédictif du risque d'annulation — Maeva / Pierre & Vacances
+Mémoire Master 2 Data & Intelligence Artificielle
+
+Point d'entrée. La navigation est déclarée ici via st.navigation : les noms de
+fichiers restent en ASCII pur et les icônes sont définies dans le code, ce qui
+évite tout problème d'encodage sous Windows.
 """
 
 import streamlit as st
 
-# ---------------------------------------------------------------------------
-# Configuration de la page (doit être le PREMIER appel Streamlit)
-# ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Scoring Annulation — Maeva",
+    page_title="Scoring Annulation · Maeva",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ---------------------------------------------------------------------------
-# Imports après set_page_config
-# ---------------------------------------------------------------------------
-from utils.auth import check_rgpd_consent, check_authentication, get_current_user
+from utils.auth import current_user, guard          # noqa: E402
+from utils.ui import sidebar_brand, sidebar_user    # noqa: E402
 
-# ---------------------------------------------------------------------------
-# Étape 1 : Consentement RGPD (bloquant)
-# ---------------------------------------------------------------------------
-check_rgpd_consent()
+# --- Consentement RGPD puis authentification (bloquants) -------------------
+guard()
 
-# ---------------------------------------------------------------------------
-# Étape 2 : Authentification (bloquant)
-# ---------------------------------------------------------------------------
-check_authentication()
+# --- Sidebar ---------------------------------------------------------------
+sidebar_brand()
+sidebar_user(current_user())
 
-# ---------------------------------------------------------------------------
-# Étape 3 : Page d'accueil (si authentifié)
-# ---------------------------------------------------------------------------
-user = get_current_user()
+# --- Navigation ------------------------------------------------------------
+pages = [
+    st.Page("views/accueil.py",    title="Accueil",          icon=":material/home:", default=True),
+    st.Page("views/dashboard.py",  title="Dashboard",        icon=":material/insights:"),
+    st.Page("views/prediction.py", title="Prédiction",       icon=":material/target:"),
+    st.Page("views/batch.py",      title="Scoring batch",    icon=":material/upload_file:"),
+    st.Page("views/impact.py",     title="Impact business",  icon=":material/payments:"),
+    st.Page("views/historique.py", title="Historique",       icon=":material/history:"),
+    st.Page("views/rgpd.py",       title="Conformité RGPD",  icon=":material/shield:"),
+]
 
-st.sidebar.markdown(f"👤 Connecté : **{user}**")
-st.sidebar.markdown("---")
+nav = st.navigation(pages, position="sidebar")
 
-if st.sidebar.button("🚪 Déconnexion"):
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
+# --- Pied de sidebar -------------------------------------------------------
+st.sidebar.markdown("<br>", unsafe_allow_html=True)
+if st.sidebar.button("Se déconnecter", use_container_width=True):
+    st.session_state.clear()
     st.rerun()
 
-# --- Contenu principal ---
-st.title("🎯 Scoring prédictif — Risque d'annulation")
-st.markdown("---")
+st.sidebar.caption("XGBoost · seuil 0.50 · PR-AUC 0.263")
 
-st.markdown(
-    """
-    Bienvenue sur l'outil de scoring prédictif des annulations de réservation.
-
-    Cette application permet aux gestionnaires de réservation de :
-    """
-)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(
-        """
-        ### 📊 Comprendre
-        Visualisez les tendances d'annulation
-        par canal, condition, période et région
-        via le **Dashboard**.
-        """
-    )
-
-with col2:
-    st.markdown(
-        """
-        ### 🎯 Prédire
-        Scorez un dossier individuel ou un
-        lot de réservations pour identifier
-        les dossiers à risque.
-        """
-    )
-
-with col3:
-    st.markdown(
-        """
-        ### 💰 Agir
-        Simulez l'impact business d'une
-        campagne de rétention ciblée
-        sur les dossiers alertés.
-        """
-    )
-
-st.markdown("---")
-
-st.info(
-    "👈 Utilisez la **barre latérale** pour naviguer entre les pages. "
-    "Commencez par le **Dashboard** pour explorer vos données."
-)
-
-# --- Métriques clés du modèle ---
-st.markdown("### Performances du modèle déployé")
-
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("PR-AUC", "0.2626", help="Métrique principale — 3.6× la baseline aléatoire")
-m2.metric("Rappel", "62.7%", help="Part des annulations réelles détectées")
-m3.metric("Précision", "16.8%", help="Part des alertes qui sont de vraies annulations")
-m4.metric("Seuil retenu", "0.50", help="Seuil optimisé (F1, rappel ≥ 60%)")
-
-st.caption(
-    "Modèle XGBoost optimisé par RandomizedSearchCV (100 itérations). "
-    "Pondération native des classes, sans SMOTE. "
-    "Évalué sur 20% de holdout stratifié (~62 000 dossiers)."
-)
+nav.run()

@@ -1,0 +1,311 @@
+{
+  "target": "y_annulation",
+  "n_rows": 310862,
+  "columns": {
+    "anticipation_jours": {
+      "kind": "numeric",
+      "min": -422.0,
+      "max": 391.0,
+      "default": 37.0,
+      "is_int": true
+    },
+    "duree_sejour": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 91.0,
+      "default": 7.0,
+      "is_int": true
+    },
+    "canal": {
+      "kind": "categorical",
+      "values": [
+        "ANCV",
+        "Agences de Voyages",
+        "Autres",
+        "Booking",
+        "CE Global",
+        "Marques blanches",
+        "Partenaires",
+        "Site Web affiliés",
+        "Site web Parcel",
+        "Sites web",
+        "Sites web 5C",
+        "Sites web Vacansoleil",
+        "Ventes Flash",
+        "Ventes sur place"
+      ],
+      "default": "Sites web"
+    },
+    "groupe_fournisseur": {
+      "kind": "categorical",
+      "values": [
+        "Agences Immos",
+        "Agences affiliées",
+        "Agences by maeva",
+        "Campings Affiliés",
+        "Linéaires Camping",
+        "Maeva Home",
+        "Produits Distribution Camping",
+        "Produits Distribution RT",
+        "RT Linéaires"
+      ],
+      "default": "Produits Distribution Camping"
+    },
+    "periode_depart": {
+      "kind": "categorical",
+      "values": [
+        "Avt Hiver",
+        "Avt Noel",
+        "Avt Printemps",
+        "Avt Toussaint",
+        "Avt ÉTÉ",
+        "ETE - Aout",
+        "ETE - Juillet",
+        "Vac Hiver",
+        "Vac Noel",
+        "Vac Nouvel An",
+        "Vac Printemps",
+        "Vac Toussaint"
+      ],
+      "default": "Avt ÉTÉ"
+    },
+    "periode_vacances": {
+      "kind": "categorical",
+      "values": [
+        "Autre depart"
+      ],
+      "default": "Autre depart"
+    },
+    "mois_resa": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 12.0,
+      "default": 5.0,
+      "is_int": true
+    },
+    "jour_semaine_resa": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 7.0,
+      "default": 4.0,
+      "is_int": true
+    },
+    "dossier_nb_pax_total": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 121.0,
+      "default": 3.0,
+      "is_int": true
+    },
+    "dossier_nb_pax_adultes": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 121.0,
+      "default": 3.0,
+      "is_int": true
+    },
+    "nb_mineur": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 25.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "nb_bebe": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 14.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "type_produit": {
+      "kind": "binary",
+      "default": 0
+    },
+    "theme_station": {
+      "kind": "categorical",
+      "values": [
+        "campagne",
+        "mer",
+        "montagne",
+        "paris",
+        "ville"
+      ],
+      "default": "mer"
+    },
+    "type_hebergement": {
+      "kind": "categorical",
+      "values": [
+        "camping",
+        "chalets",
+        "gîtes de france et clévacances",
+        "hébergement insolite",
+        "hôtel",
+        "location de particulier",
+        "maisons & villas",
+        "résidence de tourisme",
+        "résidences de prestige",
+        "village vacances"
+      ],
+      "default": "camping"
+    },
+    "distance_km": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 19517.927,
+      "default": 520.35,
+      "is_int": false
+    },
+    "nb_dossiers_anterieurs": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 753.0,
+      "default": 1.0,
+      "is_int": true
+    },
+    "est_client_vip": {
+      "kind": "binary",
+      "default": 0
+    },
+    "device_resa": {
+      "kind": "categorical",
+      "values": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "default": "desktop"
+    },
+    "prix_total_ttc": {
+      "kind": "numeric",
+      "min": -24892.83,
+      "max": 36420.0,
+      "default": 465.23,
+      "is_int": false
+    },
+    "acompte_verse": {
+      "kind": "binary",
+      "default": 1
+    },
+    "nb_produits_total": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 30.0,
+      "default": 1.0,
+      "is_int": true
+    },
+    "nb_prestations": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 29.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_clics_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 155.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_ouvertures_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 2557.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_desabo_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 11.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_campagnes_recues": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 47.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "a_interagi_email": {
+      "kind": "binary",
+      "default": 0
+    },
+    "recence_email_jours": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 999.0,
+      "default": 999.0,
+      "is_int": true
+    },
+    "nb_campagnes_cliquees": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 17.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_urls_distinctes_cliquees": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 143.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "taux_clic_sur_ouverture": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 37.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "segment_email": {
+      "kind": "categorical",
+      "values": [
+        "desabonne",
+        "engage",
+        "inactif",
+        "ouvreur_seulement",
+        "peu_engage",
+        "tres_engage"
+      ],
+      "default": "inactif"
+    },
+    "est_dans_crm": {
+      "kind": "binary",
+      "default": 0
+    },
+    "cond_annulation": {
+      "kind": "categorical",
+      "values": [
+        "Flexi",
+        "Flexi+",
+        "NoFlex",
+        "NoFlex (<J30)"
+      ],
+      "default": "Flexi"
+    },
+    "est_assure_annulation": {
+      "kind": "binary",
+      "default": 1
+    },
+    "dossier_etat": {
+      "kind": "categorical",
+      "values": [
+        "ANNULE",
+        "RESA"
+      ],
+      "default": "RESA"
+    },
+    "a_type_paiement_renseigne": {
+      "kind": "binary",
+      "default": 0
+    },
+    "distance_inconnue": {
+      "kind": "binary",
+      "default": 0
+    }
+  }
+}

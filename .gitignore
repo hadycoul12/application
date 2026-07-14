@@ -1,23 +1,24 @@
-# Secrets (NE JAMAIS COMMIT)
+# Secrets — ne jamais committer
 .streamlit/secrets.toml
+
+# Donnees confidentielles — NE JAMAIS PUBLIER
+data/dataset_full.parquet
+data/dataset_annulation_clean.csv
+data/*_full.*
+
+# Fichiers generes a l'execution
+data/audit_log.csv
+data/predictions_history.csv
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 .venv/
 venv/
 env/
 
-# Logs générés à l'exécution
-data/audit_log.csv
-data/predictions_history.csv
-
-# IDE
+# IDE / OS
 .vscode/
 .idea/
-*.swp
-
-# OS
 .DS_Store
 Thumbs.db
