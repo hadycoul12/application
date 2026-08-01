@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from utils.ui import inject_css
+from utils.ui import inject_css, render_html
 
 AUDIT_LOG = Path(__file__).parent.parent / "data" / "audit_log.csv"
 
@@ -29,8 +29,7 @@ def _get_credentials() -> tuple[str, str] | None:
 def _secrets_missing_screen():
     """Écran d'erreur explicite quand secrets.toml est introuvable."""
     st.error("⚠️ Configuration des identifiants introuvable")
-    st.markdown(
-        """
+    render_html("""
         Streamlit ne trouve pas la section `[credentials]` dans les secrets.
 
         **En local** — vérifie que le fichier `.streamlit/secrets.toml` existe
@@ -69,8 +68,7 @@ def require_consent():
 
     inject_css()
 
-    st.markdown(
-        """
+    render_html("""
         <div class="gate">
             <div class="gate-hero">
                 <div class="shield">🛡️</div>
@@ -115,9 +113,7 @@ def require_consent():
                 </div>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
     st.write("")
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -153,15 +149,12 @@ def require_login():
 
     valid_user, valid_pass = creds
 
-    st.markdown('<div class="login-wrap">', unsafe_allow_html=True)
-    st.markdown(
-        """
+    render_html('<div class="login-wrap">')
+    render_html("""
         <div class="login-logo">🎯</div>
         <div class="login-title">Scoring Annulation</div>
         <div class="login-sub">Accès réservé aux gestionnaires de réservation</div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
     with st.form("login", border=True):
         user = st.text_input("Identifiant", placeholder="maeva")
@@ -180,7 +173,7 @@ def require_login():
             log(user.strip() or "inconnu", "Échec de connexion")
             st.error("Identifiant ou mot de passe incorrect.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    render_html("</div>")
     st.stop()
 
 

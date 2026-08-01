@@ -22,6 +22,7 @@ import streamlit as st
 
 ROOT = Path(__file__).parent.parent
 MODEL_PATH = ROOT / "models" / "xgb_optimise.joblib"
+CALIB_PATH = ROOT / "models" / "calibrateur.joblib"
 SCHEMA_PATH = ROOT / "data" / "schema.json"
 
 DATA_CANDIDATES = [
@@ -31,8 +32,13 @@ DATA_CANDIDATES = [
 ]
 
 TARGET = "y_annulation"
-SEUIL = 0.50
-SEUIL_MOYEN = 0.30
+
+# Seuils de risque RELATIFS au taux de base (jamais codés en dur — voir base_rate).
+# Les probabilités sont recalibrées (isotonique, voir load_calibrator) : un score
+# affiché reflète alors un vrai risque, ce qui rend cette échelle relative fiable.
+#   « Élevé » = proba ≥ FACTEUR_ELEVE × taux de base
+#   « Moyen » = proba ≥ taux de base
+FACTEUR_ELEVE = 2.0
 
 # Colonnes présentes dans les données mais jamais utilisées comme features
 TECHNIQUES = {"dossier_cle", "id_dossier", "index"}
@@ -58,6 +64,15 @@ LABELS = {
     "nb_campagnes_recues": "Campagnes email reçues",
     "recence_email_jours": "Récence du dernier email",
     "assure_x_anticip": "Interaction assurance × anticipation",
+    "nb_bebe": "Nombre de bébés",
+    "nb_bebes": "Nombre de bébés",
+    "nb_mineur": "Nombre de mineurs",
+    "nb_mineurs": "Nombre de mineurs",
+    "nb_enfants": "Nombre d'enfants",
+    "nb_adultes": "Nombre d'adultes",
+    "dossier_nb_pax_total": "Nombre de voyageurs",
+    "dossier_nb_pax_adultes": "Nombre d'adultes",
+    "nb_pax_total": "Nombre de voyageurs",
 }
 
 # Regroupement des champs dans le formulaire de prédiction
@@ -79,6 +94,39 @@ UNITES = {
     "recence_email_jours": "jours",
 }
 
+# ---------------------------------------------------------------------------
+# Variables retirées du FORMULAIRE de prédiction.
+# Elles restent utilisées par le modèle : on ne les demande simplement pas au
+# gestionnaire, car leur valeur est peu actionnable ou déjà connue du système.
+# En coulisses, chacune reçoit une valeur par défaut (voir default_for()).
+# ---------------------------------------------------------------------------
+MASQUEES = {
+    "est_assure_annulation",   # assurance annulation
+    "assure_x_anticip",        # interaction dérivée de l'assurance
+    "groupe_fournisseur",      # groupe fournisseur
+    "type_produit",            # type de produit
+    "type_produit_principal",
+    "client_vip",              # client VIP
+    "est_client_vip",
+    "est_vip",
+    "vip",
+}
+
+# Colonnes de comptage : forcées en entier même si le CSV les stocke en float
+# (un nombre de bébés ou de mineurs ne peut pas valoir 1,4).
+COMPTAGES = {
+    "nb_bebe", "nb_bebes", "nb_mineur", "nb_mineurs", "nb_enfants",
+    "nb_adultes", "nb_pax", "nb_pax_total", "nb_pax_adultes",
+    "dossier_nb_pax_total", "dossier_nb_pax_adultes", "dossier_nb_pax",
+    "nb_produits_total", "nb_dossiers_anterieurs", "nb_campagnes_recues",
+}
+
+
+def is_comptage(col: str) -> bool:
+    """Vrai si la colonne est un comptage (doit rester entier)."""
+    c = col.lower()
+    return c in COMPTAGES or c.startswith("nb_") or "_nb_" in c
+
 
 def label(col: str) -> str:
     """Libellé lisible d'une colonne."""
@@ -99,6 +147,32 @@ def load_model():
         )
         st.stop()
     return joblib.load(MODEL_PATH)
+
+
+@st.cache_resource(show_spinner=False)
+def load_calibrator():
+    """
+    Charge le calibrateur isotonique s'il existe, sinon None.
+
+    Le calibrateur (produit par le notebook, section « Recalibration ») recale
+    les probabilités brutes du modèle sur la réalité observée. Il est facultatif :
+    si le fichier est absent, l'application fonctionne comme avant (scores bruts).
+    """
+    if not CALIB_PATH.exists():
+        return None
+    try:
+        obj = joblib.load(CALIB_PATH)
+        return obj.get("calibrateur") if isinstance(obj, dict) else obj
+    except Exception:
+        return None
+
+
+def _calibrate(p):
+    """Applique le calibrateur aux probabilités brutes, si disponible."""
+    cal = load_calibrator()
+    if cal is None:
+        return np.asarray(p, dtype=float).ravel()
+    return cal.predict(np.asarray(p, dtype=float).ravel())
 
 
 @st.cache_data(show_spinner="Chargement du portefeuille…")
@@ -340,10 +414,33 @@ def _ncols(a) -> int:
 # ===========================================================================
 # Prédiction
 # ===========================================================================
+@st.cache_data(show_spinner=False)
+def base_rate() -> float:
+    """
+    Taux d'annulation de référence, lu dans les données — jamais codé en dur.
+
+    C'est l'ancre des niveaux de risque : un dossier « moyen » dépasse ce taux,
+    un dossier « élevé » en dépasse le double. Repli neutre (0.5) si les données
+    sont indisponibles, ce qui désactive de fait l'échelle relative.
+    """
+    df, _ = load_data()
+    if df is not None and TARGET in df.columns:
+        r = float(df[TARGET].mean())
+        if 0.0 < r < 1.0:
+            return r
+    return 0.5
+
+
+def seuil_alerte() -> float:
+    """Seuil d'alerte « risque élevé » = FACTEUR_ELEVE × taux de base."""
+    return min(1.0, FACTEUR_ELEVE * base_rate())
+
+
 def risk_level(p: float) -> str:
-    if p >= SEUIL:
+    br = base_rate()
+    if p >= FACTEUR_ELEVE * br:
         return "Élevé"
-    if p >= SEUIL_MOYEN:
+    if p >= br:
         return "Moyen"
     return "Faible"
 
@@ -353,15 +450,236 @@ def risk_css(level: str) -> str:
 
 
 def predict_one(values: dict) -> float:
-    """Probabilité d'annulation d'un dossier unique."""
+    """Probabilité d'annulation calibrée d'un dossier unique."""
     X = align(pd.DataFrame([values]))
-    return float(load_model().predict_proba(X)[0, 1])
+    raw = load_model().predict_proba(X)[0, 1]
+    return float(_calibrate([raw])[0])
 
 
 def predict_many(df: pd.DataFrame) -> pd.DataFrame:
-    """Scoring d'un lot. Ajoute proba_annulation et risque."""
+    """Scoring d'un lot. Ajoute proba_annulation (calibrée) et risque."""
     X = align(df)
     out = df.copy()
-    out["proba_annulation"] = load_model().predict_proba(X)[:, 1]
+    raw = load_model().predict_proba(X)[:, 1]
+    out["proba_annulation"] = _calibrate(raw)
     out["risque"] = out["proba_annulation"].map(risk_level)
     return out.sort_values("proba_annulation", ascending=False)
+
+
+@st.cache_data(show_spinner="Évaluation du portefeuille…")
+def portfolio_scores():
+    """
+    Probabilités calibrées + vérité terrain sur le portefeuille chargé.
+
+    Sert à construire, en direct, la courbe rappel/précision du modèle (page
+    Impact) — plutôt que des chiffres figés. Retourne (proba, y) sous forme de
+    tableaux numpy, ou (None, None) si les données ou la cible sont indisponibles.
+    """
+    df, _ = load_data()
+    if df is None or TARGET not in df.columns:
+        return None, None
+    try:
+        X = align(df)
+    except Exception:
+        return None, None
+    proba = _calibrate(load_model().predict_proba(X)[:, 1])
+    return np.asarray(proba, dtype=float), df[TARGET].to_numpy()
+
+
+# ===========================================================================
+# Spécification des champs du formulaire
+# ===========================================================================
+# Principe : c'est le MODÈLE qui dicte les champs, pas le schéma.
+#
+# Pour chaque colonne réclamée par le modèle, on cherche sa description dans
+# `schema.json` ; si elle n'y figure pas (feature créée dans le notebook et
+# absente du CSV exporté, par exemple), on l'infère directement du jeu de
+# données chargé. En dernier recours, on fournit un champ neutre plutôt que
+# d'échouer.
+#
+# Ce renversement garantit qu'aucune colonne attendue ne peut manquer à
+# l'appel au moment du scoring.
+# ===========================================================================
+
+def _infer_spec(s: pd.Series, col: str = "") -> dict:
+    """Déduit une spécification de saisie à partir d'une colonne de données."""
+    if not pd.api.types.is_numeric_dtype(s):
+        mods = sorted(str(v) for v in s.dropna().unique())
+        if 0 < len(mods) <= 60:
+            return {
+                "kind": "categorical",
+                "values": mods,
+                "default": str(s.mode().iloc[0]) if len(s.mode()) else mods[0],
+            }
+        return {"kind": "text", "default": ""}
+
+    vals = set(pd.unique(s.dropna()))
+    if vals and vals <= {0, 1, 0.0, 1.0, True, False}:
+        return {"kind": "binary", "default": int(s.mode().iloc[0]) if len(s.mode()) else 0}
+
+    # Un comptage reste entier même si le CSV le stocke en float (1.0, 2.0…)
+    entier = bool(pd.api.types.is_integer_dtype(s)) or is_comptage(col)
+    mediane = float(np.nanmedian(s))
+    return {
+        "kind": "numeric",
+        "min": float(np.nanmin(s)),
+        "max": float(np.nanmax(s)),
+        "default": round(mediane) if entier else mediane,
+        "is_int": entier,
+    }
+
+
+@st.cache_data(show_spinner=False)
+def field_specs() -> dict:
+    """
+    Spécification de saisie pour CHAQUE colonne réclamée par le modèle.
+
+    Chaque entrée porte une clé `source`, par ordre de fiabilité :
+      modele  modalités lues dans l'encodeur ajusté du pipeline (référence)
+      schema  décrite dans schema.json
+      data    inférée du jeu de données chargé
+      absent  introuvable — champ neutre, score peu fiable
+    """
+    plan = encoding_plan()
+    requises = plan["base_cols"] or list((load_schema() or {}).get("columns", {}))
+
+    cols = (load_schema() or {}).get("columns", {})
+    df, _ = load_data()
+    vocab, numeriques = pipeline_vocab()
+
+    specs: dict = {}
+    for c in requises:
+        # 1. Le pipeline fait foi : il connaît les modalités vues à l'entraînement,
+        #    y compris pour les colonnes créées dans le notebook.
+        if c in vocab:
+            mods = vocab[c]
+            defaut = mods[0]
+            if c in cols and cols[c].get("kind") == "categorical":
+                d = cols[c].get("default")
+                if d in mods:
+                    defaut = d
+            elif df is not None and c in df.columns and len(df[c].mode()):
+                d = str(df[c].mode().iloc[0])
+                if d in mods:
+                    defaut = d
+            # Une colonne à deux modalités 0/1 reste un booléen à l'écran
+            if set(mods) <= {"0", "1", "0.0", "1.0", "True", "False"}:
+                spec = {"kind": "binary", "default": 0, "source": "modele"}
+            else:
+                spec = {"kind": "categorical", "values": mods,
+                        "default": defaut, "source": "modele"}
+
+        # 2. Colonne numérique du pipeline : bornes issues des données si possible
+        elif c in numeriques:
+            if df is not None and c in df.columns:
+                spec = _infer_spec(df[c], c)
+                spec["source"] = "data"
+            elif c in cols:
+                spec = dict(cols[c])
+                spec["source"] = "schema"
+            else:
+                spec = {"kind": "numeric", "min": 0.0, "max": 1e9,
+                        "default": 0.0, "is_int": True, "source": "absent"}
+
+        # 3. Modèle nu (pas de pipeline) : schéma puis données
+        elif c in cols:
+            spec = dict(cols[c])
+            spec["source"] = "schema"
+        elif df is not None and c in df.columns:
+            spec = _infer_spec(df[c], c)
+            spec["source"] = "data"
+        else:
+            spec = {"kind": "numeric", "min": 0.0, "max": 1e9,
+                    "default": 0.0, "is_int": True, "source": "absent"}
+
+        # Un comptage reste entier, quelle que soit la source
+        if spec.get("kind") == "numeric" and is_comptage(c):
+            spec["is_int"] = True
+            spec["default"] = round(float(spec.get("default", 0)))
+
+        # Variable retirée du formulaire (mais conservée pour le modèle)
+        spec["hidden"] = c in MASQUEES
+
+        specs[c] = spec
+
+    return specs
+
+
+def default_for(col: str, spec: dict):
+    """Valeur par défaut d'une variable masquée, injectée en coulisses."""
+    if spec["kind"] == "categorical":
+        return spec.get("default", spec["values"][0] if spec.get("values") else "")
+    if spec["kind"] == "binary":
+        return int(spec.get("default", 0))
+    if spec["kind"] == "text":
+        return spec.get("default", "")
+    val = spec.get("default", 0)
+    return round(float(val)) if spec.get("is_int") else float(val)
+
+
+def derive(values: dict) -> dict:
+    """
+    Recalcule les features dérivées quand leurs composantes sont connues.
+    Évite de demander à l'utilisateur une valeur qu'on sait calculer.
+    """
+    v = dict(values)
+    if {"est_assure_annulation", "anticipation_jours"} <= set(v):
+        v["assure_x_anticip"] = v["est_assure_annulation"] * v["anticipation_jours"]
+    return v
+
+
+# ===========================================================================
+# Vocabulaire embarqué dans le pipeline
+# ===========================================================================
+# Un ColumnTransformer ajusté connaît, pour chaque colonne catégorielle, les
+# modalités exactes vues à l'entraînement (`OneHotEncoder.categories_`) ainsi
+# que la répartition catégorielles / numériques.
+#
+# C'est une source plus fiable que `schema.json` : elle vient du modèle
+# lui-même, et couvre y compris les colonnes créées dans le notebook et
+# absentes du CSV exporté.
+# ===========================================================================
+
+def _column_transformers(prep) -> list:
+    """Tous les ColumnTransformer présents dans le préprocesseur."""
+    if prep is None:
+        return []
+    if hasattr(prep, "transformers_"):
+        return [prep]
+    return [s for _, s in getattr(prep, "steps", []) if hasattr(s, "transformers_")]
+
+
+@st.cache_data(show_spinner=False)
+def pipeline_vocab() -> tuple[dict, list]:
+    """
+    Retourne ({colonne: [modalités exactes]}, [colonnes numériques]).
+    Vide si le modèle n'est pas un pipeline avec ColumnTransformer.
+    """
+    m = load_model()
+    if not _is_pipeline(m):
+        return {}, []
+
+    vocab: dict = {}
+    numeriques: list = []
+
+    for ct in _column_transformers(_preprocessor(m)):
+        for _, trans, cols in ct.transformers_:
+            if trans == "drop" or cols is None:
+                continue
+
+            cols = [cols] if isinstance(cols, str) else list(cols)
+            cols = [str(c) for c in cols]
+
+            # Un transformer peut lui-même être un petit pipeline
+            enc = trans
+            if hasattr(enc, "steps"):
+                enc = enc.steps[-1][1]
+
+            categories = getattr(enc, "categories_", None)
+            if categories is not None:
+                for c, mods in zip(cols, categories):
+                    vocab[c] = [str(v) for v in mods]
+            else:
+                numeriques.extend(cols)
+
+    return vocab, numeriques

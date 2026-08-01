@@ -9,7 +9,9 @@ import plotly.express as px
 import streamlit as st
 
 from utils.auth import current_user, log
-from utils.model import SEUIL, encoding_plan, label, load_schema, predict_many
+from utils.model import (
+    seuil_alerte, derive, encoding_plan, field_specs, label, load_schema, predict_many,
+)
 from utils.ui import page_header, section
 
 HISTORY = Path(__file__).parent.parent / "data" / "predictions_history.csv"
@@ -31,7 +33,10 @@ if schema is None:
     st.stop()
 
 plan = encoding_plan()
-requises = [c for c in plan["base_cols"] if c in schema["columns"]]
+# Les colonnes exigées viennent du MODÈLE, pas du schéma : c'est lui qui
+# fait foi. Une colonne absente du schéma reste obligatoire dans le CSV.
+SPECS = field_specs()
+requises = list(SPECS)
 
 with st.expander("Format de fichier attendu", icon=":material/description:"):
     st.markdown(
@@ -43,7 +48,7 @@ with st.expander("Format de fichier attendu", icon=":material/description:"):
         pd.DataFrame({
             "Colonne": requises,
             "Libellé": [label(c) for c in requises],
-            "Type": [schema["columns"][c]["kind"] for c in requises],
+            "Type": [SPECS[c]["kind"] for c in requises],
         }),
         use_container_width=True, hide_index=True, height=280,
     )
@@ -77,6 +82,7 @@ st.success(
 if ("assure_x_anticip" not in df.columns
         and {"est_assure_annulation", "anticipation_jours"} <= set(df.columns)):
     df["assure_x_anticip"] = df["est_assure_annulation"] * df["anticipation_jours"]
+    st.caption("`assure_x_anticip` a été recalculée automatiquement.")
 
 with st.expander("Aperçu des données importées"):
     st.dataframe(df.head(10), use_container_width=True, hide_index=True)
@@ -117,8 +123,9 @@ with g1:
     fig = px.histogram(out, x="proba_annulation", nbins=40)
     fig.update_traces(marker=dict(color="#CBD5E1", line=dict(width=0)),
                       hovertemplate="Score : %{x:.2f}<br>Dossiers : %{y}<extra></extra>")
-    fig.add_vline(x=SEUIL, line_dash="dash", line_color="#DC2626", line_width=2,
-                  annotation_text=f"seuil {SEUIL}", annotation_position="top",
+    _seuil = seuil_alerte()
+    fig.add_vline(x=_seuil, line_dash="dash", line_color="#DC2626", line_width=2,
+                  annotation_text=f"seuil {_seuil:.2f}", annotation_position="top",
                   annotation_font=dict(size=11, color="#DC2626"))
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",

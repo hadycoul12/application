@@ -1,10 +1,12 @@
 """Impact business — simulation du chiffre d'affaires sauvé."""
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 from utils.auth import current_user, log
+from utils.model import base_rate, portfolio_scores, seuil_alerte
 from utils.ui import page_header, section
 
 page_header(
@@ -43,17 +45,33 @@ cout = st.sidebar.number_input(
 )
 
 # ---------------------------------------------------------------------------
-# Courbe seuil / rappel / précision issue de l'évaluation du modèle
+# Courbe seuil / rappel / précision — calculée EN DIRECT sur le portefeuille
+# chargé, avec les probabilités CALIBRÉES et la vérité terrain (aucune valeur
+# figée, échelle cohérente avec le reste de l'application).
 # ---------------------------------------------------------------------------
-COURBE = [
-    # seuil, rappel, précision
-    (0.15, 0.967, 0.0857),
-    (0.30, 0.866, 0.1143),
-    (0.40, 0.751, 0.1420),
-    (0.50, 0.627, 0.1680),
-    (0.60, 0.472, 0.2010),
-    (0.70, 0.298, 0.2450),
-]
+proba_pf, y_pf = portfolio_scores()
+s_alerte = round(seuil_alerte(), 3)
+
+
+def _perf(seuil, proba, y):
+    pred = proba >= seuil
+    tp = int((pred & (y == 1)).sum())
+    fp = int((pred & (y == 0)).sum())
+    fn = int(((~pred) & (y == 1)).sum())
+    rappel = tp / (tp + fn) if (tp + fn) else 0.0
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    return rappel, precision
+
+
+if proba_pf is not None and y_pf is not None:
+    # Seuils étalés sur l'échelle calibrée, seuil d'alerte inclus.
+    hauts = np.quantile(proba_pf, [0.80, 0.90, 0.95, 0.975])
+    seuils = sorted({round(base_rate(), 3), s_alerte,
+                     *(round(float(h), 3) for h in hauts)})
+    COURBE = [(s, *_perf(s, proba_pf, y_pf)) for s in seuils]
+else:
+    # Repli : la vérité terrain n'est pas disponible dans le jeu chargé.
+    COURBE = [(s_alerte, 0.63, 0.17)]
 
 annulations = int(volume * taux_annul / 100)
 ca_expose = annulations * panier
@@ -76,7 +94,7 @@ def simule(seuil, rappel, precision):
 
 sims = [simule(*c) for c in COURBE]
 best = max(sims, key=lambda s: s["net"])
-ref = next(s for s in sims if s["seuil"] == 0.50)
+ref = min(sims, key=lambda s: abs(s["seuil"] - s_alerte))
 
 # ---------------------------------------------------------------------------
 # Contexte
@@ -86,7 +104,8 @@ c1.metric("Dossiers", f"{volume:,}".replace(",", " "))
 c2.metric("Annulations attendues", f"{annulations:,}".replace(",", " "))
 c3.metric("CA exposé", f"{ca_expose/1e6:.2f} M€",
           help="Chiffre d'affaires perdu si aucune action n'est menée.")
-c4.metric("Bénéfice net (seuil 0.50)", f"{ref['net']/1e3:,.0f} k€".replace(",", " "),
+c4.metric(f"Bénéfice net (seuil d'alerte {s_alerte:.2f})",
+          f"{ref['net']/1e3:,.0f} k€".replace(",", " "),
           f"ROI {ref['roi']:.0f} %")
 
 # ---------------------------------------------------------------------------
@@ -133,17 +152,17 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-if best["seuil"] != 0.50:
+if best["seuil"] != ref["seuil"]:
     st.info(
         f"Avec ces hypothèses, le **seuil {best['seuil']:.2f}** maximise le bénéfice net "
-        f"({best['net']:,.0f} €), contre {ref['net']:,.0f} € au seuil 0.50 retenu par défaut. "
-        f"Il génère toutefois {best['alertes']:,} alertes à traiter."
+        f"({best['net']:,.0f} €), contre {ref['net']:,.0f} € au seuil d'alerte "
+        f"{ref['seuil']:.2f}. Il génère toutefois {best['alertes']:,} alertes à traiter."
         .replace(",", " "),
         icon=":material/lightbulb:",
     )
 else:
     st.success(
-        "Le seuil 0.50 retenu par défaut maximise le bénéfice net avec ces hypothèses.",
+        f"Le seuil d'alerte {ref['seuil']:.2f} maximise le bénéfice net avec ces hypothèses.",
         icon=":material/check_circle:",
     )
 
@@ -183,7 +202,8 @@ st.dataframe(
 )
 
 st.caption(
-    "Ces projections reposent sur les couples rappel/précision mesurés sur le jeu de test. "
-    "Le taux de rétention est une hypothèse commerciale : seul un protocole A/B "
-    "(groupe traité vs groupe témoin) permet de le mesurer réellement."
+    "Les couples rappel/précision sont calculés en direct sur le portefeuille chargé, "
+    "à partir des probabilités calibrées. Le taux de rétention reste une hypothèse "
+    "commerciale : seul un protocole A/B (groupe traité vs groupe témoin) permet de "
+    "le mesurer réellement."
 )

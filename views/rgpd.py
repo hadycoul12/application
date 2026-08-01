@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from utils.auth import current_user, log, read_audit
-from utils.ui import page_header, section
+from utils.ui import page_header, render_html, section
 
 page_header(
     "Gouvernance",
@@ -21,41 +21,32 @@ log(current_user(), "Consultation de la page RGPD")
 c1, c2, c3 = st.columns(3, gap="medium")
 
 with c1:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">✅</div>
             <h4>Consentement</h4>
             <p>Bannière bloquante présentée à l'entrée. Aucun traitement
             n'est possible avant acceptation explicite.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 with c2:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">🗂️</div>
             <h4>Minimisation</h4>
             <p>7 variables directement identifiantes exclues du dataset
             et du modèle déployé.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 with c3:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">🔐</div>
             <h4>Sécurité</h4>
             <p>Chiffrement HTTPS, authentification obligatoire et
             journalisation horodatée des accès.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
 tab1, tab2, tab3, tab4 = st.tabs(
     ["Minimisation", "Sécurité", "Registre des traitements", "Journal des accès"]

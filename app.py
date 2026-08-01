@@ -45,6 +45,6 @@ if st.sidebar.button("Se déconnecter", use_container_width=True):
     st.session_state.clear()
     st.rerun()
 
-st.sidebar.caption("XGBoost · seuil 0.50 · PR-AUC 0.263")
+st.sidebar.caption("XGBoost calibré (isotonic) · PR-AUC 0.263")
 
 nav.run()

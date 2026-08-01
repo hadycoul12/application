@@ -16,6 +16,138 @@
       "default": 7.0,
       "is_int": true
     },
+    "dossier_nb_pax_total": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 121.0,
+      "default": 3.0,
+      "is_int": true
+    },
+    "dossier_nb_pax_adultes": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 121.0,
+      "default": 3.0,
+      "is_int": true
+    },
+    "nb_mineur": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 25.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "nb_bebe": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 14.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "mois_resa": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 12.0,
+      "default": 5.0,
+      "is_int": true
+    },
+    "nb_dossiers_anterieurs": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 10.0,
+      "default": 1.0,
+      "is_int": true
+    },
+    "est_client_vip": {
+      "kind": "binary",
+      "default": 0
+    },
+    "nb_clics_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 155.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_ouvertures_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 2557.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_desabo_90j": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 11.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_campagnes_recues": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 47.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_campagnes_cliquees": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 17.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "nb_urls_distinctes_cliquees": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 143.0,
+      "default": 0.0,
+      "is_int": true
+    },
+    "taux_clic_sur_ouverture": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 37.0,
+      "default": 0.0,
+      "is_int": false
+    },
+    "a_interagi_email": {
+      "kind": "binary",
+      "default": 0
+    },
+    "recence_email_jours": {
+      "kind": "numeric",
+      "min": 0.0,
+      "max": 999.0,
+      "default": 999.0,
+      "is_int": true
+    },
+    "est_assure_annulation": {
+      "kind": "binary",
+      "default": 1
+    },
+    "nb_produits_total": {
+      "kind": "numeric",
+      "min": 1.0,
+      "max": 30.0,
+      "default": 1.0,
+      "is_int": true
+    },
+    "assure_x_anticip": {
+      "kind": "numeric",
+      "min": -2.0,
+      "max": 365.0,
+      "default": 14.0,
+      "is_int": true
+    },
+    "est_solo": {
+      "kind": "binary",
+      "default": 0
+    },
+    "a_prestations": {
+      "kind": "binary",
+      "default": 0
+    },
     "canal": {
       "kind": "categorical",
       "values": [
@@ -76,51 +208,18 @@
       ],
       "default": "Autre depart"
     },
-    "mois_resa": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 12.0,
-      "default": 5.0,
-      "is_int": true
-    },
-    "jour_semaine_resa": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 7.0,
-      "default": 4.0,
-      "is_int": true
-    },
-    "dossier_nb_pax_total": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 121.0,
-      "default": 3.0,
-      "is_int": true
-    },
-    "dossier_nb_pax_adultes": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 121.0,
-      "default": 3.0,
-      "is_int": true
-    },
-    "nb_mineur": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 25.0,
-      "default": 0.0,
-      "is_int": false
-    },
-    "nb_bebe": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 14.0,
-      "default": 0.0,
-      "is_int": false
-    },
     "type_produit": {
       "kind": "binary",
       "default": 0
+    },
+    "device_resa": {
+      "kind": "categorical",
+      "values": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "default": "desktop"
     },
     "theme_station": {
       "kind": "categorical",
@@ -132,6 +231,33 @@
         "ville"
       ],
       "default": "mer"
+    },
+    "region_destination": {
+      "kind": "categorical",
+      "values": [
+        "aquitaine",
+        "autre",
+        "auvergne",
+        "basse-normandie",
+        "bretagne",
+        "catalogne",
+        "centre",
+        "corse",
+        "franche-comté",
+        "haute-normandie",
+        "ile-de-france",
+        "inconnu",
+        "languedoc-roussillon",
+        "lorraine",
+        "midi-pyrénées",
+        "nord-pas de calais",
+        "pays de la loire",
+        "picardie",
+        "poitou-charentes",
+        "provence-alpes-côte d'azur",
+        "rhône-alpes"
+      ],
+      "default": "rhône-alpes"
     },
     "type_hebergement": {
       "kind": "categorical",
@@ -149,118 +275,6 @@
       ],
       "default": "camping"
     },
-    "distance_km": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 19517.927,
-      "default": 520.35,
-      "is_int": false
-    },
-    "nb_dossiers_anterieurs": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 753.0,
-      "default": 1.0,
-      "is_int": true
-    },
-    "est_client_vip": {
-      "kind": "binary",
-      "default": 0
-    },
-    "device_resa": {
-      "kind": "categorical",
-      "values": [
-        "desktop",
-        "mobile",
-        "tablet"
-      ],
-      "default": "desktop"
-    },
-    "prix_total_ttc": {
-      "kind": "numeric",
-      "min": -24892.83,
-      "max": 36420.0,
-      "default": 465.23,
-      "is_int": false
-    },
-    "acompte_verse": {
-      "kind": "binary",
-      "default": 1
-    },
-    "nb_produits_total": {
-      "kind": "numeric",
-      "min": 1.0,
-      "max": 30.0,
-      "default": 1.0,
-      "is_int": true
-    },
-    "nb_prestations": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 29.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "nb_clics_90j": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 155.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "nb_ouvertures_90j": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 2557.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "nb_desabo_90j": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 11.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "nb_campagnes_recues": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 47.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "a_interagi_email": {
-      "kind": "binary",
-      "default": 0
-    },
-    "recence_email_jours": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 999.0,
-      "default": 999.0,
-      "is_int": true
-    },
-    "nb_campagnes_cliquees": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 17.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "nb_urls_distinctes_cliquees": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 143.0,
-      "default": 0.0,
-      "is_int": true
-    },
-    "taux_clic_sur_ouverture": {
-      "kind": "numeric",
-      "min": 0.0,
-      "max": 37.0,
-      "default": 0.0,
-      "is_int": false
-    },
     "segment_email": {
       "kind": "categorical",
       "values": [
@@ -273,10 +287,6 @@
       ],
       "default": "inactif"
     },
-    "est_dans_crm": {
-      "kind": "binary",
-      "default": 0
-    },
     "cond_annulation": {
       "kind": "categorical",
       "values": [
@@ -287,25 +297,16 @@
       ],
       "default": "Flexi"
     },
-    "est_assure_annulation": {
-      "kind": "binary",
-      "default": 1
-    },
-    "dossier_etat": {
+    "anticipation_tranche": {
       "kind": "categorical",
       "values": [
-        "ANNULE",
-        "RESA"
+        "court_30j",
+        "derniere_minute",
+        "long_180j",
+        "moyen_90j",
+        "tres_long"
       ],
-      "default": "RESA"
-    },
-    "a_type_paiement_renseigne": {
-      "kind": "binary",
-      "default": 0
-    },
-    "distance_inconnue": {
-      "kind": "binary",
-      "default": 0
+      "default": "moyen_90j"
     }
   }
 }

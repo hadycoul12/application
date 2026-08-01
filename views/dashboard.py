@@ -482,7 +482,19 @@ with tabs[2]:
 # ===========================================================================
 with tabs[3]:
     if "est_dans_crm" not in df.columns:
-        st.info("Les variables d'engagement email sont absentes de ce jeu de données.")
+        st.info(
+            "**Les variables d'engagement email ne figurent pas dans ce jeu de données.** "
+            "Cet onglet analyse l'effet des campagnes (nombre reçu, récence) sur le "
+            "risque d'annulation, à partir des données CRM Batch. Il s'activera "
+            "automatiquement si le dataset chargé contient les colonnes correspondantes "
+            "(`est_dans_crm`, `nb_campagnes_recues`, `recence_email_jours`).",
+            icon=":material/mark_email_read:",
+        )
+        st.caption(
+            "Rappel méthodologique : dans l'analyse du mémoire, seuls ~9 % des dossiers "
+            "disposent d'un historique email exploitable, ce qui limite l'apport prédictif "
+            "de ces variables au niveau global — d'où l'analyse Tier 2 sur le sous-ensemble CRM."
+        )
     else:
         couverture = d["est_dans_crm"].mean() * 100
         crm = d[d["est_dans_crm"] == 1]

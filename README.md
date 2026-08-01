@@ -178,6 +178,29 @@ Les variables `client_email`, `nom`, `prenom`, `telephone`, `adresse_postale`, `
 
 ---
 
+
+## Personnalisation
+
+### Logo Maeva
+
+Déposez `logo_maeva.png` (ou `.jpg`, `.svg`) dans le dossier `assets/` — ou à la
+racine du projet. Il apparaît automatiquement sur la bannière d'accueil et dans
+la barre latérale. Sans logo, un intitulé texte s'affiche à la place.
+
+### Variables retirées du formulaire de prédiction
+
+Certaines variables restent utilisées par le modèle mais ne sont pas demandées
+au gestionnaire (valeur peu actionnable ou déjà connue du système) : assurance
+annulation, groupe fournisseur, type de produit, client VIP. Elles reçoivent une
+valeur par défaut en coulisses. Pour modifier cette liste, éditez l'ensemble
+`MASQUEES` dans `utils/model.py`.
+
+### Comptages
+
+Les colonnes de comptage (nombre de bébés, de mineurs, de voyageurs…) sont
+forcées en entier dans les formulaires, même si le CSV les stocke en décimal.
+La règle est centralisée dans `is_comptage()` / `COMPTAGES` (`utils/model.py`).
+
 ## Déploiement sur Streamlit Community Cloud
 
 1. Pousser le dépôt sur GitHub — vérifier que `.streamlit/secrets.toml` est bien ignoré par Git.

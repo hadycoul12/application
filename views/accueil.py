@@ -2,54 +2,48 @@
 
 import streamlit as st
 
-from utils.model import encoding_plan, load_schema
-from utils.ui import page_header, section
+import pandas as pd
+
+from utils.model import base_rate, encoding_plan, field_specs, label, load_schema, seuil_alerte
+from utils.ui import page_header, render_html, section
 
 page_header(
     "Tableau de bord",
     "Scoring prédictif du risque d'annulation",
     "Identifiez les réservations à risque avant l'annulation et concentrez vos "
     "actions de rétention là où elles ont le plus d'impact.",
+    show_logo=True,
 )
 
 c1, c2, c3 = st.columns(3, gap="medium")
 
 with c1:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">📈</div>
             <h4>Comprendre</h4>
             <p>Explorez les tendances d'annulation par canal de vente, condition
             tarifaire, anticipation et destination.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 with c2:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">🎯</div>
             <h4>Prédire</h4>
             <p>Scorez un dossier ou un lot complet, et comprenez les facteurs de
             risque grâce aux explications SHAP.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 with c3:
-    st.markdown(
-        """
+    render_html("""
         <div class="tile">
             <div class="icon">💰</div>
             <h4>Agir</h4>
             <p>Simulez le chiffre d'affaires sauvé par une campagne de rétention
             ciblée et arbitrez le seuil d'alerte.</p>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
 section("Performances du modèle en production")
 
@@ -72,8 +66,7 @@ section("Contexte")
 a, b = st.columns([3, 2], gap="large")
 
 with a:
-    st.markdown(
-        """
+    render_html("""
         <div class="card">
             <div class="card-title">Ce que le modèle sait faire</div>
             <div class="card-body">
@@ -87,26 +80,25 @@ with a:
                 des signaux comportementaux aujourd'hui trop peu couverts.
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
 with b:
-    st.markdown(
-        """
+    br = base_rate() * 100
+    sa = seuil_alerte() * 100
+    render_html(f"""
         <div class="card">
             <div class="card-title">Seuil de décision</div>
             <div class="card-body">
-                Le seuil retenu est <b>0.50</b> : il maximise le F1 sous contrainte
-                d'un rappel supérieur à 60 %.
+                Les probabilités sont <b>recalibrées</b> : un score affiché
+                correspond à un risque réel. Un dossier est signalé « à risque
+                élevé » au-delà de <b>{sa:.0f} %</b> — soit 2× le taux de base
+                observé ({br:.1f} %).
                 <br><br>
-                L'abaisser augmente le rappel mais multiplie les fausses alertes —
-                à 0.30, on capte 87 % des annulations au prix de 2,4× plus d'alertes.
+                Le seuil d'action optimal reste un arbitrage économique (coût
+                d'une relance vs marge sauvée), analysé dans la page Impact business.
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """)
 
 # --- Diagnostic technique ---------------------------------------------------
 schema = load_schema()
@@ -157,7 +149,34 @@ with st.expander("Diagnostic technique du modèle", icon=":material/build:"):
             )
 
         st.markdown("**Colonnes attendues en entrée**")
-        st.code(", ".join(plan["base_cols"]), language=None)
+
+        specs = field_specs()
+        libelles = {
+            "schema": "Décrite dans schema.json",
+            "data": "Absente du schéma, retrouvée dans les données",
+            "absent": "Introuvable — champ neutre",
+        }
+        tableau = pd.DataFrame([
+            {
+                "Colonne": c,
+                "Libellé": label(c),
+                "Type": s["kind"],
+                "Origine": libelles.get(s["source"], s["source"]),
+            }
+            for c, s in specs.items()
+        ])
+
+        manquantes = tableau[tableau["Origine"].str.startswith("Introuvable")]
+        if len(manquantes):
+            st.error(
+                f"**{len(manquantes)} colonne(s) réclamée(s) par le modèle sont "
+                "introuvables dans vos données.** Le formulaire propose un champ neutre, "
+                "mais le score sera faussé. Régénérez `schema.json` à partir du jeu de "
+                "données ayant réellement servi à l'entraînement.",
+                icon=":material/error:",
+            )
+
+        st.dataframe(tableau, use_container_width=True, hide_index=True, height=300)
 
 st.info(
     "Utilisez le menu latéral pour naviguer. Commencez par le **Dashboard** pour "
