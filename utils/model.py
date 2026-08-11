@@ -264,7 +264,7 @@ def encoding_plan() -> dict:
     expected = sig["names"]
     types = sig["types"]
 
-    # --- Cas 1 : Pipeline scikit-learn --------------------------------------
+    # Cas 1 : Pipeline scikit-learn
     if _is_pipeline(m):
         # sklearn mémorise les colonnes d'entrée quand le fit a porté sur un
         # DataFrame. `feature_names_in_` est un tableau numpy : on le convertit
@@ -288,7 +288,7 @@ def encoding_plan() -> dict:
         return {"mode": "passthrough", "expected": [], "base_cols": list(cols),
                 "cat_cols": [], "maps": {}, "n_steps": 0}
 
-    # --- Cas 2 : one-hot -----------------------------------------------------
+    # Cas 2 : one-hot
     inconnues = [e for e in expected if e not in cols]
     prefixes = {c for c in cat_cols for e in inconnues if e.startswith(f"{c}_")}
     if prefixes and len(inconnues) > len(cat_cols):
@@ -296,13 +296,13 @@ def encoding_plan() -> dict:
         return {"mode": "onehot", "expected": expected, "base_cols": base,
                 "cat_cols": sorted(prefixes), "maps": {}, "n_steps": 0}
 
-    # --- Cas 3 : catégoriel natif XGBoost ------------------------------------
+    # Cas 3 : catégoriel natif XGBoost
     if "c" in types:
         return {"mode": "categorical", "expected": expected, "base_cols": expected,
                 "cat_cols": [c for c in cat_cols if c in expected],
                 "maps": {}, "n_steps": 0}
 
-    # --- Cas 4 : encodage numérique ------------------------------------------
+    #  Cas 4 : encodage numérique 
     # LabelEncoder et .cat.codes attribuent les codes par ordre alphabétique ;
     # le schéma stocke les modalités triées, l'index reconstitue donc le code.
     maps = {c: {v: i for i, v in enumerate(cols[c]["values"])}

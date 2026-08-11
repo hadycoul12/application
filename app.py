@@ -1,11 +1,3 @@
-"""
-Scoring prédictif du risque d'annulation — Maeva / Pierre & Vacances
-Mémoire Master 2 Data & Intelligence Artificielle
-
-Point d'entrée. La navigation est déclarée ici via st.navigation : les noms de
-fichiers restent en ASCII pur et les icônes sont définies dans le code, ce qui
-évite tout problème d'encodage sous Windows.
-"""
 
 import streamlit as st
 
@@ -19,14 +11,14 @@ st.set_page_config(
 from utils.auth import current_user, guard          # noqa: E402
 from utils.ui import sidebar_brand, sidebar_user    # noqa: E402
 
-# --- Consentement RGPD puis authentification (bloquants) -------------------
+#  Consentement RGPD puis authentification (bloquants) 
 guard()
 
-# --- Sidebar ---------------------------------------------------------------
+#  Sidebar 
 sidebar_brand()
 sidebar_user(current_user())
 
-# --- Navigation ------------------------------------------------------------
+# Navigation 
 pages = [
     st.Page("views/accueil.py",    title="Accueil",          icon=":material/home:", default=True),
     st.Page("views/dashboard.py",  title="Dashboard",        icon=":material/insights:"),
@@ -39,7 +31,7 @@ pages = [
 
 nav = st.navigation(pages, position="sidebar")
 
-# --- Pied de sidebar -------------------------------------------------------
+# Pied de sidebar 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 if st.sidebar.button("Se déconnecter", use_container_width=True):
     st.session_state.clear()
