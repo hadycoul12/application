@@ -68,6 +68,14 @@ if TARGET not in df.columns:
     st.error(f"La colonne cible `{TARGET}` est absente du jeu de données.")
     st.stop()
 
+# `est_dans_crm` n'est pas une feature du modèle : elle peut manquer du jeu chargé.
+# On la dérive alors — un dossier est « dans le CRM » s'il a reçu au moins une
+# campagne email (proxy validé : ~12,3 % de couverture, identique à la donnée réelle).
+EST_CRM_DERIVE = False
+if "est_dans_crm" not in df.columns and "nb_campagnes_recues" in df.columns:
+    df["est_dans_crm"] = (df["nb_campagnes_recues"] > 0).astype(int)
+    EST_CRM_DERIVE = True
+
 if schema is None:
     st.warning(
         "Le fichier `data/schema.json` est absent. Relancez `prepare_data.py` "
@@ -515,6 +523,12 @@ with tabs[3]:
             "sur le seul sous-ensemble CRM.",
             icon=":material/info:",
         )
+
+        if EST_CRM_DERIVE:
+            st.caption(
+                "Indicateur CRM dérivé : un dossier est considéré « couvert » s'il a "
+                "reçu au moins une campagne email (`nb_campagnes_recues > 0`)."
+            )
 
         if len(crm) > 100:
             c1, c2 = st.columns(2, gap="large")

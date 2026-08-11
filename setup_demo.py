@@ -74,7 +74,7 @@ if args.encodage == "pipeline":
     print(f"Colonnes entree : {X.shape[1]}")
     print(f"Taux annulation : {taux * 100:.2f} %")
     print("\n✓ models/xgb_optimise.joblib")
-    print("\nModèle JOUET — remplacez-le par le vôtre avant la soutenance.")
+    print("\nModèle JOUET ")
     raise SystemExit(0)
 
 if args.encodage == "onehot":
@@ -86,7 +86,7 @@ elif args.encodage == "categorical":
     for c in cat:
         X[c] = X[c].astype("category")
     kw = {"enable_categorical": True, "tree_method": "hist"}
-else:  # ordinal — codes par ordre alphabétique, comme LabelEncoder
+else:  # ordinal, codes par ordre alphabétique, comme LabelEncoder
     for c in cat:
         m = {v: i for i, v in enumerate(cols[c]["values"])}
         X[c] = X[c].astype(str).map(m)
@@ -108,4 +108,4 @@ print(f"Encodage        : {args.encodage}")
 print(f"Features        : {X.shape[1]}")
 print(f"Taux annulation : {taux * 100:.2f} %")
 print("\n✓ models/xgb_optimise.joblib")
-print("\nModèle JOUET — remplacez-le par le vôtre avant la soutenance.")
+print("\nModèle JOUET.")

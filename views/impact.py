@@ -18,6 +18,14 @@ page_header(
 
 log(current_user(), "Consultation de l'impact business")
 
+st.warning(
+    "**Simulateur — résultats illustratifs.** Les montants affichés dépendent des "
+    "hypothèses que vous saisissez (panier moyen, coût d'action, taux de rétention) : "
+    "ce ne sont pas des gains réels mesurés. Faute de données de coûts Maeva, cette "
+    "page opérationnalise le cadre de décision à titre exploratoire.",
+    icon=":material/info:",
+)
+
 # ---------------------------------------------------------------------------
 # Paramètres
 # ---------------------------------------------------------------------------

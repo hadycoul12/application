@@ -9,7 +9,7 @@ Si vous générez `schema.json` à partir de `dataset_annulation_clean.csv`, ces
 Dans `modele_v2.ipynb`, **juste avant le `model.fit()`**, ajoutez cette cellule :
 
 ```python
-# --- Export pour l'application Streamlit ---------------------------------
+#  Export pour l'application Streamlit
 # X est le DataFrame passé au fit, y la cible.
 # On exporte exactement ce que le modèle voit, features dérivées comprises.
 

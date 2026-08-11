@@ -6,15 +6,15 @@ Prépare les données de l'application à partir du dataset complet.
 Produit :
 
   data/schema.json              type et modalités RÉELLES de chaque colonne
-  data/dataset_full.parquet     jeu complet — LOCAL uniquement, ignoré par Git
-  data/sample_dataset.parquet   échantillon stratifié — versionné, sert au déploiement
+  data/dataset_full.parquet     jeu complet, LOCAL uniquement, ignoré par Git
+  data/sample_dataset.parquet   échantillon stratifié, versionné, sert au déploiement
 
 Le schéma est la pièce maîtresse : aucune modalité n'est codée en dur dans
 l'application. Les libellés affichés (« CE Global », « Avt Hiver ») proviennent
 directement de vos données.
 
 Note : le fichier est lu en une seule passe. Un CSV de 310 000 lignes pèse une
-vingtaine de mégaoctets — le découper en morceaux n'apporterait rien et
+vingtaine de mégaoctets, le découper en morceaux n'apporterait rien et
 introduirait des incohérences de typage entre morceaux.
 """
 
@@ -62,7 +62,7 @@ def main(src: str):
     if not path.exists():
         sys.exit(f"Fichier introuvable : {path}")
 
-    # --- Lecture -----------------------------------------------------------
+    # Lecture
     print(f"Lecture de {path.name} …")
     apercu = path.read_text(encoding="utf-8-sig", errors="ignore")[:4000]
     sep = ";" if apercu.count(";") > apercu.count(",") else ","
@@ -70,11 +70,11 @@ def main(src: str):
     df = pd.read_csv(path, sep=sep, encoding="utf-8-sig", low_memory=False)
     print(f"  {len(df):,} lignes · {len(df.columns)} colonnes".replace(",", " "))
 
-    # --- Contrôle RGPD ------------------------------------------------------
+    # Contrôle RGPD
     a_jeter = [c for c in df.columns if c.lower() in INTERDITES]
     if a_jeter:
         df = df.drop(columns=a_jeter)
-        print(f"  ⚠️  Colonnes identifiantes supprimées : {', '.join(a_jeter)}")
+        print(f"   Colonnes identifiantes supprimées : {', '.join(a_jeter)}")
     else:
         print("  ✓ Aucune colonne directement identifiante détectée.")
 
@@ -87,7 +87,7 @@ def main(src: str):
     taux = df[TARGET].mean()
     print(f"  Taux d'annulation : {taux * 100:.2f} %\n")
 
-    # --- Découverte du schéma ----------------------------------------------
+    # Découverte du schéma
     schema = {"target": TARGET, "n_rows": int(len(df)), "columns": {}}
     ignorees = []
 
@@ -145,10 +145,8 @@ def main(src: str):
     )
     print("\n✓ schema.json")
 
-    # --- Écriture Parquet ---------------------------------------------------
-    # Aucun downcast : laisser pandas choisir int8/int16 « au plus juste »
-    # provoque des débordements dès qu'une valeur dépasse la plage retenue.
-    # Le gain de place serait dérisoire face au risque.
+    # Écriture Parquet 
+
     full = DATA / "dataset_full.parquet"
     df.to_parquet(full, index=False, compression="snappy")
     print(f"✓ dataset_full.parquet    ({len(df):,} lignes · "
