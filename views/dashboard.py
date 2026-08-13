@@ -1,4 +1,4 @@
-"""Dashboard — exploration du portefeuille et analyse exploratoire."""
+"""Dashboard, exploration du portefeuille et analyse exploratoire."""
 
 import numpy as np
 import pandas as pd
@@ -69,7 +69,7 @@ if TARGET not in df.columns:
     st.stop()
 
 # `est_dans_crm` n'est pas une feature du modèle : elle peut manquer du jeu chargé.
-# On la dérive alors — un dossier est « dans le CRM » s'il a reçu au moins une
+# On la dérive alors, un dossier est « dans le CRM » s'il a reçu au moins une
 # campagne email (proxy validé : ~12,3 % de couverture, identique à la donnée réelle).
 EST_CRM_DERIVE = False
 if "est_dans_crm" not in df.columns and "nb_campagnes_recues" in df.columns:
@@ -92,7 +92,7 @@ NUM = [c for c, s in COLS.items() if s["kind"] == "numeric" and c in df.columns]
 log(current_user(), f"Dashboard ({source} · {len(df)} lignes)")
 
 # ---------------------------------------------------------------------------
-# Filtres — construits à partir des modalités réelles
+# Filtres, construits à partir des modalités réelles
 # ---------------------------------------------------------------------------
 st.sidebar.markdown("### Filtres")
 d = df.copy()
@@ -171,7 +171,7 @@ with tabs[0]:
                                       x=.5, xanchor="center"))
         montre(fig, 300)
         st.caption(
-            f"Classe minoritaire à {taux:.2f} % — un déséquilibre marqué qui impose "
+            f"Classe minoritaire à {taux:.2f} %, un déséquilibre marqué qui impose "
             "une pondération des classes et le PR-AUC comme métrique de référence."
         )
 
@@ -229,7 +229,7 @@ with tabs[0]:
         montre(fig, 400)
         st.caption(
             "La taille des bulles représente le nombre absolu d'annulations. Les modalités "
-            "situées en haut à droite concentrent l'essentiel de la perte — gros volume "
+            "situées en haut à droite concentrent l'essentiel de la perte, gros volume "
             "**et** risque élevé. Ce sont les cibles prioritaires d'une action de rétention."
         )
 
@@ -268,7 +268,7 @@ with tabs[1]:
                 t0 = g.loc[g.est_assure_annulation == "0", "taux"].iloc[0]
                 t1 = g.loc[g.est_assure_annulation == "1", "taux"].iloc[0]
                 st.caption(
-                    f"Les clients assurés annulent **{t1 / max(t0, 1e-9):.1f}× plus** — "
+                    f"Les clients assurés annulent **{t1 / max(t0, 1e-9):.1f}× plus**, "
                     "le coût nul de l'annulation lève le principal frein comportemental."
                 )
 
@@ -294,7 +294,7 @@ with tabs[1]:
             fig.update_traces(
                 textposition="outside", textfont=dict(size=10, color="#5A6270"),
                 marker_line_width=0,
-                hovertemplate="<b>%{x} — %{fullData.name}</b><br>Taux : %{y:.2f} %"
+                hovertemplate="<b>%{x}, %{fullData.name}</b><br>Taux : %{y:.2f} %"
                               "<br>Volume : %{customdata[0]:,}<extra></extra>",
             )
             fig.update_layout(
@@ -329,7 +329,7 @@ with tabs[1]:
         )
         montre(fig, 340)
         st.caption(
-            "Le gradient des conditions tarifaires — du plus flexible au plus contraignant — "
+            "Le gradient des conditions tarifaires, du plus flexible au plus contraignant, "
             "est l'un des signaux structurels les plus nets du modèle."
         )
 
@@ -411,7 +411,7 @@ with tabs[2]:
 
     c1, c2 = st.columns(2, gap="large")
 
-    # Saisonnalité — la colonne période peut être texte OU numérique
+    # Saisonnalité, la colonne période peut être texte OU numérique
     with c1:
         per = "periode_depart" if "periode_depart" in df.columns else None
         if per:
@@ -476,7 +476,7 @@ with tabs[2]:
         fig.update_layout(
             barmode="overlay",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
-            xaxis=dict(title="Anticipation (jours — tronquée au 99ᵉ centile)", **NUE),
+            xaxis=dict(title="Anticipation (jours, tronquée au 99ᵉ centile)", **NUE),
             yaxis=dict(title="Densité", **GRILLE),
         )
         montre(fig, 330)
@@ -501,7 +501,7 @@ with tabs[3]:
         st.caption(
             "Rappel méthodologique : dans l'analyse du mémoire, seuls ~9 % des dossiers "
             "disposent d'un historique email exploitable, ce qui limite l'apport prédictif "
-            "de ces variables au niveau global — d'où l'analyse Tier 2 sur le sous-ensemble CRM."
+            "de ces variables au niveau global, d'où l'analyse Tier 2 sur le sous-ensemble CRM."
         )
     else:
         couverture = d["est_dans_crm"].mean() * 100
@@ -512,13 +512,13 @@ with tabs[3]:
                   help="Part des dossiers disposant d'un historique email exploitable.")
         c2.metric("Dossiers couverts", fr(len(crm)))
         c3.metric("Taux d'annulation (couverts)",
-                  f"{crm[TARGET].mean() * 100:.2f} %" if len(crm) else "—",
+                  f"{crm[TARGET].mean() * 100:.2f} %" if len(crm) else "N/D",
                   f"{crm[TARGET].mean() * 100 - taux:+.2f} pt" if len(crm) else None,
                   delta_color="inverse")
 
         st.warning(
             f"Seuls **{couverture:.1f} %** des dossiers disposent d'un historique email. "
-            "Sur les autres, les variables d'engagement valent zéro — ce qui dilue leur "
+            "Sur les autres, les variables d'engagement valent zéro, ce qui dilue leur "
             "pouvoir prédictif dans le modèle global et justifie l'analyse Tier 2 menée "
             "sur le seul sous-ensemble CRM.",
             icon=":material/info:",
@@ -575,7 +575,7 @@ with tabs[3]:
                         montre(fig, 310)
 
             st.caption(
-                "Ces gradients restent faibles comparés à ceux des variables structurelles — "
+                "Ces gradients restent faibles comparés à ceux des variables structurelles, "
                 "cohérent avec le classement SHAP, où les variables email figurent en bas."
             )
 
@@ -592,7 +592,7 @@ with tabs[4]:
     else:
         st.markdown("**Corrélation de chaque variable avec la cible**")
         st.caption(
-            "Seules les variables numériques et binaires figurent ici — le coefficient "
+            "Seules les variables numériques et binaires figurent ici, le coefficient "
             "de Pearson n'a pas de sens sur une variable catégorielle non ordonnée."
         )
 
@@ -621,7 +621,7 @@ with tabs[4]:
         )
         montre(fig, max(320, 28 * len(cdf)))
         st.caption(
-            "Les corrélations linéaires restent faibles en valeur absolue — attendu sur un "
+            "Les corrélations linéaires restent faibles en valeur absolue, attendu sur un "
             "problème déséquilibré aux effets non linéaires. C'est ce qui justifie le recours "
             "à un modèle d'ensemble comme XGBoost plutôt qu'à une régression logistique."
         )
@@ -645,7 +645,7 @@ with tabs[4]:
         montre(fig, 520)
         st.caption(
             "Une corrélation très élevée entre deux variables explicatives signalerait une "
-            "redondance — attendu entre `assure_x_anticip` et ses composantes, la variable "
+            "redondance, attendu entre `assure_x_anticip` et ses composantes, la variable "
             "dérivée étant précisément conçue pour capter leur interaction."
         )
 

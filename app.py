@@ -33,6 +33,13 @@ nav = st.navigation(pages, position="sidebar")
 
 # Pied de sidebar 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
+
+st.sidebar.link_button(
+    "📖 Guide utilisateur (PDF)",
+    "https://drive.google.com/file/d/1wVImy7cQ612LFl1JDMcz8Phsf4LRqqUy/view?usp=sharing",
+    use_container_width=True,
+)
+
 if st.sidebar.button("Se déconnecter", use_container_width=True):
     st.session_state.clear()
     st.rerun()

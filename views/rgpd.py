@@ -1,4 +1,4 @@
-"""Conformité RGPD — consentement, minimisation, sécurité, registre, audit."""
+"""Conformité RGPD, consentement, minimisation, sécurité, registre, audit."""
 
 import pandas as pd
 import streamlit as st
@@ -56,7 +56,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
 # 1. Minimisation
 # ---------------------------------------------------------------------------
 with tab1:
-    st.markdown("#### Principe de minimisation — article 5.1.c du RGPD")
+    st.markdown("#### Principe de minimisation, article 5.1.c du RGPD")
     st.markdown(
         "Les données collectées doivent être « adéquates, pertinentes et limitées "
         "à ce qui est nécessaire au regard des finalités ». Les variables suivantes "
@@ -65,7 +65,7 @@ with tab1:
 
     exclues = pd.DataFrame(
         [
-            ("client_email", "Identifiant direct", "Supprimée à l'export — aucune valeur prédictive une fois les features d'engagement agrégées"),
+            ("client_email", "Identifiant direct", "Supprimée à l'export, aucune valeur prédictive une fois les features d'engagement agrégées"),
             ("nom", "Identité", "Sans lien causal avec le comportement d'annulation"),
             ("prenom", "Identité", "Sans lien causal avec le comportement d'annulation"),
             ("telephone", "Coordonnée", "Non nécessaire au scoring"),
@@ -88,7 +88,7 @@ with tab1:
 # 2. Sécurité
 # ---------------------------------------------------------------------------
 with tab2:
-    st.markdown("#### Mesures techniques et organisationnelles — article 32 du RGPD")
+    st.markdown("#### Mesures techniques et organisationnelles, article 32 du RGPD")
 
     mesures = pd.DataFrame(
         [
@@ -121,15 +121,15 @@ with tab2:
 # 3. Registre
 # ---------------------------------------------------------------------------
 with tab3:
-    st.markdown("#### Registre des activités de traitement — article 30 du RGPD")
+    st.markdown("#### Registre des activités de traitement, article 30 du RGPD")
 
     registre = pd.DataFrame(
         [
-            ("Responsable de traitement", "Maeva — Groupe Pierre & Vacances Center Parcs"),
+            ("Responsable de traitement", "Maeva, Groupe Pierre & Vacances Center Parcs"),
             ("Nom du traitement", "Scoring prédictif du risque d'annulation de réservation"),
             ("Finalité", "Identifier les réservations présentant un risque élevé d'annulation "
                          "afin de déclencher une action de rétention ciblée"),
-            ("Base légale", "Intérêt légitime — article 6.1.f. L'optimisation de la gestion des "
+            ("Base légale", "Intérêt légitime, article 6.1.f. L'optimisation de la gestion des "
                             "réservations ne porte pas atteinte aux droits des personnes concernées"),
             ("Catégories de données", "Données de réservation anonymisées : canal de distribution, "
                                       "condition tarifaire, délai d'anticipation, durée du séjour, "
@@ -139,7 +139,7 @@ with tab3:
             ("Durée de conservation", "Session applicative uniquement. Les données d'entraînement sont "
                                       "conservées séparément selon la politique de rétention Maeva"),
             ("Transferts hors UE", "Hébergement Streamlit Community Cloud (États-Unis). "
-                                   "Seules des données anonymisées y transitent — aucune donnée à "
+                                   "Seules des données anonymisées y transitent, aucune donnée à "
                                    "caractère personnel n'est transférée"),
             ("Décision automatisée", "Le score constitue une aide à la décision. Aucune décision "
                                      "produisant un effet juridique n'est prise automatiquement"),
@@ -159,8 +159,8 @@ with tab4:
     if audit.empty:
         st.info("Aucune entrée enregistrée.", icon=":material/inbox:")
     else:
-        consent_at = st.session_state.get("consent_at", "—")
-        login_at = st.session_state.get("login_at", "—")
+        consent_at = st.session_state.get("consent_at", "N/D")
+        login_at = st.session_state.get("login_at", "N/D")
 
         a1, a2, a3 = st.columns(3)
         a1.metric("Entrées journalisées", f"{len(audit):,}".replace(",", " "))

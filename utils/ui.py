@@ -67,8 +67,8 @@ def render_html(markup: str, *, sidebar: bool = False):
 
     Streamlit traite tout bloc indenté de 4+ espaces comme du code : un HTML
     multi-ligne indenté (par confort de lecture dans le source) s'affiche alors
-    en texte brut. On aplatit donc le HTML sur une seule ligne — sans indentation
-    — avant le rendu. Les sauts de ligne deviennent des espaces (et non rien),
+    en texte brut. On aplatit donc le HTML sur une seule ligne, sans indentation
+   , avant le rendu. Les sauts de ligne deviennent des espaces (et non rien),
     pour ne pas coller entre eux les mots d'un texte réparti sur plusieurs lignes.
     """
     import re

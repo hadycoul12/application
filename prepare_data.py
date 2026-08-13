@@ -170,7 +170,7 @@ def main(src: str):
 
     print(
         "\nÀ retenir :\n"
-        "  · dataset_full.parquet est ignoré par Git — il reste sur votre machine.\n"
+        "  · dataset_full.parquet est ignoré par Git, il reste sur votre machine.\n"
         "    L'application le charge automatiquement (démo de soutenance).\n"
         "  · sample_dataset.parquet et schema.json sont versionnés et alimentent\n"
         "    l'application déployée."
