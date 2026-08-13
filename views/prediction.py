@@ -1,4 +1,4 @@
-"""Prédiction individuelle — formulaire, score et explication SHAP."""
+"""Prédiction individuelle, formulaire, score et explication SHAP."""
 
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +35,7 @@ if not SPECS:
     st.warning(
         "Impossible de déterminer les colonnes attendues par le modèle. "
         "Vérifiez que `models/xgb_optimise.joblib` et `data/schema.json` sont bien "
-        "présents — ce dernier se génère avec `python prepare_data.py <dataset.csv>`.",
+        "présents, ce dernier se génère avec `python prepare_data.py <dataset.csv>`.",
         icon=":material/warning:",
     )
     st.stop()
@@ -157,9 +157,9 @@ level = risk_level(proba)
 pct = proba * 100
 
 notes = {
-    "Élevé": "Ce dossier dépasse le seuil d'alerte — une action de rétention est recommandée.",
+    "Élevé": "Ce dossier dépasse le seuil d'alerte, une action de rétention est recommandée.",
     "Moyen": "Ce dossier est sous surveillance mais ne déclenche pas d'alerte.",
-    "Faible": "Ce dossier présente un profil de maintien — aucune action requise.",
+    "Faible": "Ce dossier présente un profil de maintien, aucune action requise.",
 }
 
 section("Résultat")

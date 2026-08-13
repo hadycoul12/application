@@ -1,4 +1,4 @@
-"""Accueil — présentation de l'outil, performances et diagnostic du modèle."""
+"""Accueil, présentation de l'outil, performances et diagnostic du modèle."""
 
 import streamlit as st
 
@@ -75,7 +75,7 @@ with a:
                 de distribution. Les variables structurelles portent l'essentiel du
                 pouvoir prédictif.
                 <br><br>
-                Il reste aveugle aux annulations <b>« surprises »</b> — un client non
+                Il reste aveugle aux annulations <b>« surprises »</b>, un client non
                 assuré qui annule malgré la perte financière. Capter ces cas supposerait
                 des signaux comportementaux aujourd'hui trop peu couverts.
             </div>
@@ -91,7 +91,7 @@ with b:
             <div class="card-body">
                 Les probabilités sont <b>recalibrées</b> : un score affiché
                 correspond à un risque réel. Un dossier est signalé « à risque
-                élevé » au-delà de <b>{sa:.0f} %</b> — soit 2× le taux de base
+                élevé » au-delà de <b>{sa:.0f} %</b>, soit 2× le taux de base
                 observé ({br:.1f} %).
                 <br><br>
                 Le seuil d'action optimal reste un arbitrage économique (coût
@@ -136,7 +136,7 @@ with st.expander("Diagnostic technique du modèle", icon=":material/build:"):
             st.success(
                 "Le modèle est un **Pipeline scikit-learn** : le préprocessing "
                 "(encodage, imputation) y est embarqué. L'application lui transmet les "
-                "colonnes brutes et le pipeline applique lui-même les transformations — "
+                "colonnes brutes et le pipeline applique lui-même les transformations, "
                 "c'est le cas le plus fiable, aucune reconstitution d'encodage n'est "
                 "nécessaire.",
                 icon=":material/verified:",
@@ -154,7 +154,7 @@ with st.expander("Diagnostic technique du modèle", icon=":material/build:"):
         libelles = {
             "schema": "Décrite dans schema.json",
             "data": "Absente du schéma, retrouvée dans les données",
-            "absent": "Introuvable — champ neutre",
+            "absent": "Introuvable, champ neutre",
         }
         tableau = pd.DataFrame([
             {

@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Scoring Annulation — Design system
+   Scoring Annulation, Design system
    Sidebar encre · bannières en dégradé · titres serif · accent corail
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Encre — sidebar et bannières */
+    /* Encre, sidebar et bannières */
     --ink-950:  #0A1622;
     --ink-900:  #0D1B2A;
     --ink-800:  #14293D;
@@ -60,7 +60,7 @@ html, body, .stApp, [class*="css"] {
 }
 
 /* ==========================================================================
-   Typographie — serif pour l'affichage
+   Typographie, serif pour l'affichage
    ========================================================================== */
 h1, h2, .display {
     font-family: 'Fraunces', Georgia, serif !important;
@@ -132,7 +132,7 @@ h3 {
 }
 
 /* ==========================================================================
-   Titre de section — filet accentué
+   Titre de section, filet accentué
    ========================================================================== */
 .section {
     font-family: 'Fraunces', Georgia, serif;
@@ -345,7 +345,7 @@ h3 {
 .badge-neutral { background: #EFF2F6;          color: var(--text-soft); }
 
 /* ==========================================================================
-   SIDEBAR — encre foncée
+   SIDEBAR, encre foncée
    ========================================================================== */
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, var(--ink-950) 0%, var(--ink-900) 55%, #102437 100%);
@@ -394,7 +394,7 @@ h3 {
     font-size: .67rem; font-weight: 600;
 }
 
-/* Navigation — pilules */
+/* Navigation, pilules */
 [data-testid="stSidebarNav"] { padding: 0; }
 [data-testid="stSidebarNav"] ul { padding: 0; gap: .25rem; display: flex; flex-direction: column; }
 [data-testid="stSidebarNav"] li { list-style: none; margin: 0; }
@@ -453,6 +453,19 @@ h3 {
     color: var(--on-dark) !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(232,89,60,.85) !important;
+    border-color: var(--brand) !important;
+    color: #fff !important;
+}
+/* Lien "Guide utilisateur" (st.link_button) : même look que les boutons sidebar */
+[data-testid="stSidebar"] [data-testid="stLinkButton"] a,
+[data-testid="stSidebar"] .stLinkButton a {
+    background: rgba(255,255,255,.07) !important;
+    border: 1px solid rgba(255,255,255,.14) !important;
+    color: var(--on-dark) !important;
+}
+[data-testid="stSidebar"] [data-testid="stLinkButton"] a:hover,
+[data-testid="stSidebar"] .stLinkButton a:hover {
     background: rgba(232,89,60,.85) !important;
     border-color: var(--brand) !important;
     color: #fff !important;

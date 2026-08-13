@@ -32,7 +32,7 @@ def _secrets_missing_screen():
     render_html("""
         Streamlit ne trouve pas la section `[credentials]` dans les secrets.
 
-        **En local** — vérifie que le fichier `.streamlit/secrets.toml` existe
+        **En local**, vérifie que le fichier `.streamlit/secrets.toml` existe
         (et non pas seulement `secrets.example.toml`), et que tu lances
         `streamlit run app.py` **depuis la racine du projet** :
 
@@ -51,7 +51,7 @@ def _secrets_missing_screen():
         password = "maeva2026"
         ```
 
-        **Sur Streamlit Cloud** — colle ce même contenu dans
+        **Sur Streamlit Cloud**, colle ce même contenu dans
         *Settings → Secrets*, puis relance l'application.
         """
     )
@@ -75,7 +75,7 @@ def require_consent():
                 <h2>Protection de vos données personnelles</h2>
                 <p>
                     Conformément au Règlement Général sur la Protection des Données
-                    (RGPD — UE 2016/679), nous vous informons du traitement mis en œuvre
+                    (RGPD, UE 2016/679), nous vous informons du traitement mis en œuvre
                     dans cette application.
                 </p>
             </div>
@@ -87,13 +87,13 @@ def require_consent():
                 </div>
                 <div class="gate-row">
                     <div class="k">⚖️ Base légale</div>
-                    <div class="v">Intérêt légitime — article 6.1.f du RGPD.</div>
+                    <div class="v">Intérêt légitime, article 6.1.f du RGPD.</div>
                 </div>
                 <div class="gate-row">
                     <div class="k">🗂️ Données traitées</div>
                     <div class="v">Variables structurelles de réservation uniquement :
                         canal, condition tarifaire, anticipation, durée, région, support.
-                        <b>Aucune donnée personnelle identifiante</b> — les variables
+                        <b>Aucune donnée personnelle identifiante</b>, les variables
                         nom, email, téléphone, adresse et date de naissance sont exclues.</div>
                 </div>
                 <div class="gate-row">
@@ -103,13 +103,13 @@ def require_consent():
                 </div>
                 <div class="gate-row">
                     <div class="k">⏱️ Conservation</div>
-                    <div class="v">Session uniquement — aucune persistance au-delà
+                    <div class="v">Session uniquement, aucune persistance au-delà
                         de la déconnexion.</div>
                 </div>
                 <div class="gate-row">
                     <div class="k">✋ Vos droits</div>
                     <div class="v">Accès, rectification, effacement, portabilité, opposition.
-                        Contact DPO : hady.coulibaly@edu.nexa.fr — réponse sous 30 jours.</div>
+                        Contact DPO : hady.coulibaly@edu.nexa.fr, réponse sous 30 jours.</div>
                 </div>
             </div>
         </div>

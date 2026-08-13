@@ -1,4 +1,4 @@
-"""Scoring par lot — import CSV, scoring en masse, export."""
+"""Scoring par lot, import CSV, scoring en masse, export."""
 
 import io
 from datetime import datetime

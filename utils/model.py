@@ -26,14 +26,14 @@ CALIB_PATH = ROOT / "models" / "calibrateur.joblib"
 SCHEMA_PATH = ROOT / "data" / "schema.json"
 
 DATA_CANDIDATES = [
-    ROOT / "data" / "dataset_full.parquet",     # local — démo de soutenance
-    ROOT / "data" / "sample_dataset.parquet",   # public — application déployée
+    ROOT / "data" / "dataset_full.parquet",     # local, démo de soutenance
+    ROOT / "data" / "sample_dataset.parquet",   # public, application déployée
     ROOT / "data" / "sample_dataset.csv",       # repli
 ]
 
 TARGET = "y_annulation"
 
-# Seuils de risque RELATIFS au taux de base (jamais codés en dur — voir base_rate).
+# Seuils de risque RELATIFS au taux de base (jamais codés en dur, voir base_rate).
 # Les probabilités sont recalibrées (isotonique, voir load_calibrator) : un score
 # affiché reflète alors un vrai risque, ce qui rend cette échelle relative fiable.
 #   « Élevé » = proba ≥ FACTEUR_ELEVE × taux de base
@@ -85,7 +85,13 @@ GROUPES = {
     "Client": ["nb_dossiers_anterieurs", "est_solo"],
     "Destination": ["region_destination", "theme_station", "periode_depart",
                     "groupe_fournisseur"],
-    "Engagement email": ["est_dans_crm", "nb_campagnes_recues", "recence_email_jours"],
+    "Engagement email": [
+        "est_dans_crm", "segment_email",
+        "nb_campagnes_recues", "nb_campagnes_cliquees",
+        "nb_clics_90j", "nb_ouvertures_90j", "nb_urls_distinctes_cliquees",
+        "nb_desabo_90j", "taux_clic_sur_ouverture", "a_interagi_email",
+        "recence_email_jours",
+    ],
 }
 
 UNITES = {
@@ -201,7 +207,7 @@ def load_schema() -> dict | None:
 # ===========================================================================
 # Quatre cas sont pris en charge :
 #
-#   pipeline     Le .joblib est un Pipeline scikit-learn — le préprocessing
+#   pipeline     Le .joblib est un Pipeline scikit-learn, le préprocessing
 #                (encodage, imputation, scaling) est embarqué. C'est le cas
 #                le plus robuste : on lui passe les colonnes brutes.
 #   onehot       XGBClassifier nu, entraîné sur des colonnes get_dummies.
@@ -252,7 +258,7 @@ def encoding_plan() -> dict:
       expected    colonnes vues par le booster (pour SHAP)
       base_cols   colonnes brutes à fournir en entrée (pour le formulaire)
       cat_cols    colonnes catégorielles concernées
-      maps        {colonne: {modalité: code}} — mode 'ordinal' uniquement
+      maps        {colonne: {modalité: code}}, mode 'ordinal' uniquement
       n_steps     nombre d'étapes du pipeline (0 si modèle nu)
     """
     m = load_model()
@@ -371,7 +377,7 @@ def transformed_frame(values: dict) -> tuple[pd.DataFrame, object, list[str]]:
 
     SHAP travaille sur l'arbre, pas sur le pipeline : il faut donc appliquer
     le préprocessing soi-même. XGBoost refusant les caractères < > [ ] dans les
-    noms de features, les colonnes sont assainies pour le calcul — les noms
+    noms de features, les colonnes sont assainies pour le calcul, les noms
     d'origine sont renvoyés à part, pour l'affichage.
     """
     m = load_model()
@@ -417,7 +423,7 @@ def _ncols(a) -> int:
 @st.cache_data(show_spinner=False)
 def base_rate() -> float:
     """
-    Taux d'annulation de référence, lu dans les données — jamais codé en dur.
+    Taux d'annulation de référence, lu dans les données, jamais codé en dur.
 
     C'est l'ancre des niveaux de risque : un dossier « moyen » dépasse ce taux,
     un dossier « élevé » en dépasse le double. Repli neutre (0.5) si les données
@@ -472,7 +478,7 @@ def portfolio_scores():
     Probabilités calibrées + vérité terrain sur le portefeuille chargé.
 
     Sert à construire, en direct, la courbe rappel/précision du modèle (page
-    Impact) — plutôt que des chiffres figés. Retourne (proba, y) sous forme de
+    Impact), plutôt que des chiffres figés. Retourne (proba, y) sous forme de
     tableaux numpy, ou (None, None) si les données ou la cible sont indisponibles.
     """
     df, _ = load_data()
@@ -538,7 +544,7 @@ def field_specs() -> dict:
       modele  modalités lues dans l'encodeur ajusté du pipeline (référence)
       schema  décrite dans schema.json
       data    inférée du jeu de données chargé
-      absent  introuvable — champ neutre, score peu fiable
+      absent  introuvable, champ neutre, score peu fiable
     """
     plan = encoding_plan()
     requises = plan["base_cols"] or list((load_schema() or {}).get("columns", {}))

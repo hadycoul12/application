@@ -1,4 +1,4 @@
-"""Impact business — simulation du chiffre d'affaires sauvé."""
+"""Impact business, simulation du chiffre d'affaires sauvé."""
 
 import numpy as np
 import pandas as pd
@@ -19,7 +19,7 @@ page_header(
 log(current_user(), "Consultation de l'impact business")
 
 st.warning(
-    "**Simulateur — résultats illustratifs.** Les montants affichés dépendent des "
+    "**Simulateur, résultats illustratifs.** Les montants affichés dépendent des "
     "hypothèses que vous saisissez (panier moyen, coût d'action, taux de rétention) : "
     "ce ne sont pas des gains réels mesurés. Faute de données de coûts Maeva, cette "
     "page opérationnalise le cadre de décision à titre exploratoire.",
@@ -53,7 +53,7 @@ cout = st.sidebar.number_input(
 )
 
 # ---------------------------------------------------------------------------
-# Courbe seuil / rappel / précision — calculée EN DIRECT sur le portefeuille
+# Courbe seuil / rappel / précision, calculée EN DIRECT sur le portefeuille
 # chargé, avec les probabilités CALIBRÉES et la vérité terrain (aucune valeur
 # figée, échelle cohérente avec le reste de l'application).
 # ---------------------------------------------------------------------------
