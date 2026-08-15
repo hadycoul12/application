@@ -6,7 +6,7 @@ Si vous générez `schema.json` à partir de `dataset_annulation_clean.csv`, ces
 
 ## Le correctif, en une cellule
 
-Dans `modele_v2.ipynb`, **juste avant le `model.fit()`**, ajoutez cette cellule :
+Dans `modele_final.ipynb`, **juste avant le `model.fit()`**, ajoutez cette cellule :
 
 ```python
 #  Export pour l'application Streamlit
