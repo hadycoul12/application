@@ -1,178 +1,112 @@
 # Scoring prédictif du risque d'annulation
 
-Application web qui estime, pour chaque réservation, la probabilité qu'elle soit annulée. À partir de ce score, l'outil aide un gestionnaire à repérer les dossiers à risque et à décider où concentrer ses actions de rétention.
+> Application Streamlit qui estime, dès la réservation, la probabilité qu'un dossier soit annulé, explique pourquoi, et aide les équipes CRM à décider où concentrer leurs actions de rétention.
 
-Le projet a été réalisé dans le cadre de mon mémoire de Master 2 Data et Intelligence Artificielle (Nexa Digital School), en alternance chez Maeva (groupe Pierre et Vacances Center Parcs).
+Projet réalisé pour mon mémoire de Master 2 Data & IA (Nexa Digital School), pendant mon alternance chez Maeva (groupe Pierre & Vacances Center Parcs).
 
-Sous le capot, un modèle XGBoost attribue une probabilité calibrée à chaque dossier, explique sa décision avec les valeurs SHAP, et propose une lecture business du seuil d'alerte.
+## Le problème de départ
 
-## Prérequis
+Une annulation tardive, c'est une chambre qui ne se revend pas et un chiffre d'affaires qui s'évapore. Les équipes savaient que certains dossiers étaient plus risqués que d'autres, mais sans moyen de les repérer à temps ni de savoir lesquels méritaient une relance.
 
-Avant de commencer, assurez-vous d'avoir installé :
+Je voulais un outil simple à utiliser : on saisit (ou on importe) des dossiers, on obtient un score compréhensible, et on voit ce qui le fait monter ou descendre.
 
-- **Python 3.10 ou une version plus récente** (testé avec 3.10 et 3.12)
-- **pip**, le gestionnaire de paquets Python (livré avec Python)
-- **Git**, pour récupérer le dépôt
-- Environ **500 Mo d'espace disque** pour l'environnement virtuel et les dépendances
+## Ce que fait l'application
 
-Pour vérifier votre version de Python :
+| Page | À quoi elle sert |
+|---|---|
+| **Accueil** | Performances du modèle et diagnostic technique |
+| **Dashboard** | Exploration du portefeuille : condition tarifaire, canal, saisonnalité, engagement e-mail |
+| **Prédiction** | Score d'un dossier, avec l'explication SHAP des facteurs qui pèsent dans la décision |
+| **Scoring batch** | Import d'un CSV, scoring de masse, export des résultats |
+| **Impact business** | Simulation du chiffre d'affaires préservé selon le seuil d'alerte choisi |
+| **Historique** | Journal des prédictions effectuées |
+| **RGPD** | Minimisation des données, registre des traitements, journal d'audit |
 
-```bash
-python --version
-```
+## Résultats
 
-## Installation
+Le modèle (XGBoost, probabilités recalibrées) a été évalué sur un portefeuille de **310 862 dossiers** :
 
-### 1. Récupérer le projet
+- **AUC-ROC : 0,764**
+- **PR-AUC : 0,263**, soit 3,6 fois mieux qu'un tirage au hasard (les annulations sont minoritaires, c'est la mesure la plus honnête ici)
+- **Rappel : 72,7 %** : plus de 7 annulations sur 10 sont détectées avant qu'elles n'arrivent
+
+Ces chiffres viennent du mémoire. Les détails de la démarche (analyse exploratoire, choix du modèle, tests de robustesse) sont dans le dépôt [`memoire_M2`](https://github.com/hadycoul12/memoire_M2).
+
+## Quelques choix de conception
+
+- **Rien n'est codé en dur.** Les listes de modalités, les champs du formulaire et les filtres sont lus dans le modèle entraîné et dans `data/schema.json`. Si les données changent, l'application suit.
+- **Des scores qu'on peut expliquer.** Chaque prédiction s'accompagne de ses valeurs SHAP : un gestionnaire voit pourquoi un dossier est jugé risqué, ce qui compte pour qu'il fasse confiance à l'outil.
+- **La confidentialité d'abord.** Aucune donnée identifiante (nom, e-mail, téléphone, adresse, date de naissance) n'entre dans le modèle. L'accès est protégé, consentement RGPD et journal d'audit compris.
+
+## Limites, dites franchement
+
+- Le signal issu des e-mails est une tendance, pas encore un résultat significatif : l'historique CRM ne couvrait que 7 mois. Avec 24 mois de données, la couverture pourrait passer à 40-50 %.
+- Les données réelles de Maeva sont confidentielles et **ne sont pas publiées** dans ce dépôt. Le tableau de bord (qui s'appuie sur elles) n'est donc disponible que si vous fournissez votre propre jeu de données.
+- Un accès de démonstration à l'application déployée est possible sur demande.
+
+## Lancer le projet en local
+
+Python 3.10 ou plus récent est nécessaire.
 
 ```bash
 git clone https://github.com/hadycoul12/application.git
 cd application
-```
-
-### 2. Créer et activer un environnement virtuel
-
-L'environnement virtuel isole les dépendances du projet du reste de votre machine.
-
-```bash
 python -m venv .venv
-```
-
-Puis activez-le selon votre système :
-
-```bash
-# Windows (PowerShell)
-.venv\Scripts\activate
-
-# macOS ou Linux
-source .venv/bin/activate
-```
-
-Une fois activé, le nom `(.venv)` apparaît au début de la ligne de commande.
-
-### 3. Installer les dépendances
-
-```bash
+source .venv/bin/activate        # Windows : .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-L'installation télécharge Streamlit, XGBoost, scikit-learn, SHAP, Plotly et quelques autres bibliothèques. Comptez deux à quatre minutes selon votre connexion.
-
-### 4. Configurer les identifiants
-
-L'accès à l'application est protégé par un mot de passe. Streamlit lit ces informations **uniquement** dans le fichier `.streamlit/secrets.toml`. Le fichier `secrets.example.toml` fourni n'est qu'un modèle : le modifier ne suffit pas, il faut en créer une copie.
+L'accès est protégé par un identifiant et un mot de passe que **vous choisissez**. Copiez le modèle de configuration, puis éditez la copie :
 
 ```bash
-# Windows
-copy .streamlit\secrets.example.toml .streamlit\secrets.toml
-
-# macOS ou Linux
 cp .streamlit/secrets.example.toml .streamlit/secrets.toml
 ```
 
-Le fichier créé contient déjà les identifiants de test :
-
-```toml
-[credentials]
-username = "maeva"
-password = "maeva2026"
-```
-
-## Identifiants de test
-
-Une fois l'application lancée, connectez-vous avec :
-
-| Champ | Valeur |
-|---|---|
-| Identifiant | `maeva` |
-| Mot de passe | `maeva2026` |
-
-## Lancement
+Ce fichier `secrets.toml` est ignoré par Git. Ne le publiez jamais.
 
 ```bash
 streamlit run app.py
 ```
 
-L'application s'ouvre automatiquement dans votre navigateur à l'adresse `http://localhost:8501`. Un écran de consentement RGPD s'affiche d'abord, puis la page de connexion.
+L'application s'ouvre sur `http://localhost:8501`. Le modèle livré (`models/xgb_optimise.joblib`) permet d'utiliser les pages Prédiction et Scoring batch immédiatement.
 
-Le dépôt contient déjà un échantillon de données et le modèle entraîné : l'application fonctionne donc immédiatement, sans étape supplémentaire.
+### Utiliser vos propres données
 
-## Données et modèle
-
-Trois fichiers permettent à l'application de tourner, tous présents dans le dépôt :
-
-| Fichier | Rôle |
-|---|---|
-| `data/sample_dataset.parquet` | Échantillon stratifié servant à l'exploration et à la démonstration |
-| `data/schema.json` | Description des colonnes (types et modalités réelles), pour ne rien coder en dur |
-| `models/xgb_optimise.joblib` | Le modèle entraîné, accompagné de son calibrateur |
-
-Pour régénérer le schéma et l'échantillon à partir de votre propre jeu de données :
+Pour activer le tableau de bord et régénérer le schéma à partir de votre CSV :
 
 ```bash
 python prepare_data.py "chemin/vers/votre_dataset.csv"
 ```
 
-Le jeu complet (`data/dataset_full.parquet`) reste sur votre machine et n'est jamais versionné : il contient des données commerciales réelles couvertes par l'accord de confidentialité Maeva.
+Les fichiers générés contenant des lignes de données restent en local. `setup_demo.py` permet aussi d'entraîner un modèle « jouet » pour tester l'application de bout en bout.
 
 ## Structure du projet
 
 ```
 application/
-├── app.py                Point d'entrée : consentement RGPD, authentification, navigation
-├── prepare_data.py       Génération du schéma et de l'échantillon à partir d'un CSV
-├── requirements.txt      Dépendances Python
-├── views/
-│   ├── accueil.py        Présentation de l'outil et performances du modèle
-│   ├── dashboard.py      Exploration du portefeuille et analyse exploratoire
-│   ├── prediction.py     Scoring d'un dossier et explication SHAP
-│   ├── batch.py          Scoring d'un lot par import de CSV
-│   ├── impact.py         Simulation du chiffre d'affaires préservé
-│   ├── historique.py     Journal des prédictions
-│   └── rgpd.py           Minimisation, sécurité, registre, journal d'audit
-├── utils/
-│   ├── auth.py           Consentement, authentification, audit
-│   ├── model.py          Chargement du modèle, schéma des features, prédiction
-│   ├── explain.py        Calcul des valeurs SHAP
-│   └── ui.py             Composants d'interface
-├── assets/style.css      Feuille de style
-├── models/               Modèle et calibrateur (.joblib)
-└── data/                 Échantillon, schéma, journaux générés à l'exécution
+├── app.py              Point d'entrée : consentement RGPD, connexion, navigation
+├── prepare_data.py     Génère le schéma à partir d'un CSV
+├── setup_demo.py       Entraîne un modèle de démonstration
+├── views/              Les pages de l'application
+├── utils/              Authentification, modèle, explications SHAP, interface
+├── models/             Modèle et calibrateur (.joblib)
+├── data/schema.json    Description des colonnes (aucune ligne de données)
+└── assets/style.css    Feuille de style
 ```
-
-## Fonctionnalités
-
-- **Accueil** : vue d'ensemble des performances et diagnostic technique du modèle.
-- **Dashboard** : analyse exploratoire du portefeuille (condition tarifaire, canal, saisonnalité, engagement email, corrélations).
-- **Prédiction** : saisie d'un dossier, score de risque et explication des facteurs par SHAP.
-- **Scoring batch** : import d'un CSV, scoring de masse et export des résultats.
-- **Impact business** : simulateur de scénarios pour arbitrer le seuil d'alerte.
-- **Conformité RGPD** : minimisation des données, registre des traitements, journal d'audit.
 
 ## Déploiement sur Streamlit Community Cloud
 
-1. Poussez le dépôt sur GitHub. Vérifiez que `.streamlit/secrets.toml` reste ignoré par Git.
-2. Sur [share.streamlit.io](https://share.streamlit.io), créez une application pointant vers ce dépôt, avec `app.py` comme fichier principal.
-3. Dans *Settings puis Secrets*, collez le bloc `[credentials]`.
-4. Lancez le déploiement.
+1. Poussez le dépôt sur GitHub (le fichier `secrets.toml` doit rester ignoré).
+2. Sur [share.streamlit.io](https://share.streamlit.io), créez une application pointant vers ce dépôt, fichier principal `app.py`.
+3. Dans *Settings > Secrets*, collez le bloc `[credentials]` avec vos propres identifiants.
 
 ## Dépannage
 
-**Le message « identifiant ou mot de passe incorrect » apparaît alors que les identifiants sont bons.**
-Le fichier édité est sans doute `secrets.example.toml` et non `secrets.toml`. Vérifiez aussi que la commande est lancée depuis la racine du projet, car Streamlit cherche `.streamlit/secrets.toml` relativement au dossier courant.
+**« Identifiant ou mot de passe incorrect » alors qu'ils sont bons.** Vérifiez que vous avez bien édité `secrets.toml` (et non `secrets.example.toml`) et que vous lancez la commande depuis la racine du projet.
 
-**L'application ne trouve pas le modèle.**
-Le fichier `models/xgb_optimise.joblib` doit être présent. Il est livré avec le dépôt ; s'il manque, récupérez-le depuis votre dernière version.
-
-**Une colonne est signalée comme manquante lors d'un scoring par lot.**
-Le CSV importé ne contient pas toutes les colonnes attendues. La liste exacte figure sur la page Scoring batch. La variable `assure_x_anticip` est recalculée automatiquement lorsque `est_assure_annulation` et `anticipation_jours` sont présentes.
-
-## Conformité RGPD
-
-Aucune donnée identifiante n'est utilisée par le modèle. Les variables telles que l'email, le nom, le téléphone, l'adresse et la date de naissance sont écartées dès la préparation des données. L'application n'affiche que des variables structurelles de réservation, exige une authentification et journalise les accès.
+**Une colonne est signalée comme manquante au scoring par lot.** Le CSV importé n'a pas toutes les colonnes attendues. La liste exacte est affichée sur la page Scoring batch. La variable `assure_x_anticip` est recalculée automatiquement.
 
 ## Auteur
 
-**Hady Coulibaly**, Master 2 Data et Intelligence Artificielle.
-
-Projet académique. Les données réelles restent soumises à l'accord de confidentialité Maeva.
+**Hady Coulibaly**, data analyst et data scientist, statisticien de formation, titulaire d'un Master Data & IA.
+[LinkedIn](https://www.linkedin.com/in/hady-coulibaly-data-ia-france-cdi/) · [Portfolio](https://portofolio-hadycoul.lovable.app/) · hady.coulibaly.data@gmail.com

@@ -27,7 +27,7 @@ SCHEMA_PATH = ROOT / "data" / "schema.json"
 
 DATA_CANDIDATES = [
     ROOT / "data" / "dataset_full.parquet",     # local, démo de soutenance
-    ROOT / "data" / "sample_dataset.parquet",   # public, application déployée
+    ROOT / "data" / "sample_dataset.parquet",   # local, jamais versionné
     ROOT / "data" / "sample_dataset.csv",       # repli
 ]
 

@@ -5,6 +5,7 @@
 data/dataset_full.parquet
 data/dataset_annulation_clean.csv
 data/*_full.*
+data/sample_dataset.*
 
 # Fichiers generes a l'execution
 data/audit_log.csv

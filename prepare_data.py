@@ -7,7 +7,7 @@ Produit :
 
   data/schema.json              type et modalités RÉELLES de chaque colonne
   data/dataset_full.parquet     jeu complet, LOCAL uniquement, ignoré par Git
-  data/sample_dataset.parquet   échantillon stratifié, versionné, sert au déploiement
+  data/sample_dataset.parquet   échantillon stratifié, LOCAL uniquement, ignoré par Git
 
 Le schéma est la pièce maîtresse : aucune modalité n'est codée en dur dans
 l'application. Les libellés affichés (« CE Global », « Avt Hiver ») proviennent
@@ -172,8 +172,9 @@ def main(src: str):
         "\nÀ retenir :\n"
         "  · dataset_full.parquet est ignoré par Git, il reste sur votre machine.\n"
         "    L'application le charge automatiquement (démo de soutenance).\n"
-        "  · sample_dataset.parquet et schema.json sont versionnés et alimentent\n"
-        "    l'application déployée."
+        "  · sample_dataset.parquet reste lui aussi local (ignoré par Git).\n"
+        "  · schema.json (types et modalités, sans aucune ligne de données) est le\n"
+        "    seul fichier de données versionné."
     )
 
 

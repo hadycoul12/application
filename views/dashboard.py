@@ -58,8 +58,10 @@ schema = load_schema()
 
 if df is None:
     st.warning(
-        "Aucun jeu de données dans `data/`. Lancez "
-        "`python prepare_data.py <votre_dataset.csv>`.",
+        "Le tableau de bord s'appuie sur des données de réservation réelles, "
+        "qui ne sont pas publiées pour des raisons de confidentialité. "
+        "En local, lancez `python prepare_data.py <votre_dataset.csv>` pour "
+        "l'activer avec votre propre jeu de données.",
         icon=":material/warning:",
     )
     st.stop()

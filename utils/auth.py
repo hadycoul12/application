@@ -47,8 +47,8 @@ def _secrets_missing_screen():
 
         ```toml
         [credentials]
-        username = "maeva"
-        password = "maeva2026"
+        username = "choisissez_un_identifiant"
+        password = "choisissez_un_mot_de_passe_long_et_unique"
         ```
 
         **Sur Streamlit Cloud**, colle ce même contenu dans

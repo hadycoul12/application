@@ -7,8 +7,8 @@ Digital School), en alternance chez Maeva.
 **Stack** : Streamlit (`st.navigation`), XGBoost ou Pipeline scikit-learn, SHAP,
 Plotly, pandas/pyarrow (Parquet).
 
-**Lancer l'app** : `streamlit run app.py` — login `maeva` / `maeva2026` (voir
-`.streamlit/secrets.toml`, à créer depuis `secrets.example.toml`).
+**Lancer l'app** : `streamlit run app.py` — identifiants à définir dans
+`.streamlit/secrets.toml` (à créer depuis `secrets.example.toml`, jamais committé).
 
 ---
 
@@ -213,7 +213,7 @@ voir `EXPORT_NOTEBOOK.md` : la solution propre est d'exporter le DataFrame
 
 ## Peut être régénéré sans risque
 
-- `data/schema.json`, `data/sample_dataset.parquet` → `python prepare_data.py <csv>`
+- `data/schema.json`, `data/sample_dataset.parquet` (local, ignoré par Git) → `python prepare_data.py <csv>`
 - `models/xgb_optimise.joblib` (version jouet) → `python setup_demo.py [--encodage onehot|ordinal|categorical]`
 
 ---
